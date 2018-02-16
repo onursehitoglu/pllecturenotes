@@ -1,0 +1,168 @@
+%\documentclass[compress,dvips,xcolor=table]{beamer}
+\usepackage{etex}
+%\documentclass{article}
+%\usepackage{beamerarticle}
+\usepackage{pstricks,pst-node} % PSTricks package
+%\usepackage[turkish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{multicol}
+%\includeonlyframes{current}
+
+\def\circtxt#1{$\mathalpha \bigcirc \mkern-13mu \mathtt #1$}
+
+\mode<article>
+{
+  \usepackage{fullpage}
+  \usepackage{pgf}
+  \usepackage{hyperref}
+}
+
+\mode<presentation>
+{
+  \usetheme{metuceng}
+
+%  \setbeamercovered{transparent}
+}
+
+
+\title{Programming Language Concepts}
+\subtitle{Logic Prog. Paradigm}
+\author{Onur Tolga Şehitoğlu}
+\institute[ODTÜ]{Bilgisayar Mühendisliği}
+\subject{Logic Programming}
+\date{}
+	\titlegraphic{\insertmetutitle\insertlicense}
+
+
+\begin{document}
+\lstset{language=C,
+        basicstyle=\scriptsize\ttfamily,
+        keywordstyle=\color{blue!50!black}\bfseries,
+        identifierstyle=\color{blue!60!green}\sffamily,
+        stringstyle=\color{red!70!green}\ttfamily,
+	commentstyle=\color{blue!30!white}\itshape,
+        showstringspaces=true}
+\setbeamercolor{hexample}{bg=green!5!white,fg=black}%
+\setbeamercolor{cexample}{bg=blue!5!white,fg=black}%
+\setbeamercolor{pexample}{bg=orange!5!white,fg=black}%
+\setbeamercolor{oexample}{bg=violet!5!white,fg=black}%
+
+ \frame[plain]{\maketitle}
+ \begin{frame}
+ \frametitle{Outline}
+ \begin{multicols}{2}
+ \tableofcontents
+ \end{multicols}
+ \end{frame}
+
+\section{Logic Programming Paradigm}
+\begin{frame}
+\frametitle{Logic Programming Paradigm}
+\begin{itemize}
+\item Based on logic and \structure{declarative programming}
+\item 60's and early 70's 
+\item Prolog (\textbf{Pro}gramming in \textbf{log}ic, 1972) is
+	the most well known representative of the paradigm.
+\item Prolog is based on \structure{Horn clauses} and 
+	\structure{SLD resolution} 
+\item Mostly developed in \structure{fifth generation computer systems
+	project}
+\item Specially designed for theorem proof and artificial intelligence but
+	allows general purpose computation.
+\item Some other languages in paradigm: ALF, Frill, Gödel, Mercury, Oz,
+Ciao, $\lambda$Prolog, datalog, and CLP languages
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Constraint Logic Programming}
+\begin{itemize}
+\item
+Clause: disjunction of universally quantified literals,
+\[ \forall(L_1 \vee L_2 \vee ... \vee L_n) \]
+\item
+A logic program clause is a clause with exactly one
+positive literal
+\[ \begin{array}{l}
+   \forall(A \vee \neg A_1 \vee \neg A_2 ... \vee \neg A_n) \equiv \\
+   \forall(A \Leftarrow A_1 \wedge A_2 ... \wedge  A_n) 
+\end{array}\] 
+
+\item
+A goal clause: no positive literal
+\[ \forall(\neg A_1 \vee \neg A_2 ... \vee \neg A_n) \]
+
+\item
+Proof by refutation, try to unsatisfy the clauses with
+a goal clause $G$. Find $\exists(G)$.
+\item
+Linear resolution for definite programs with constraints and
+selected atom.
+\end{itemize}
+\end{frame}
+
+\defverbatim[colored]\codefamily{
+\begin{lstlisting}[language=Prolog,escapechar=\#]
+father(ahmet,ayse).
+father(hasan,ahmet).
+mother(fatma,ayse).
+mother(hatice,fatma).
+parent(X,Y) :- father(X,Y).
+parent(X,Y) :- mother(X,Y).
+grandparent(X,Y) :- parent(X,Z),parent(Z,Y).
+\end{lstlisting}}
+\begin{frame}
+\frametitle{What does Prolog look like?}
+\begin{beamercolorbox}{oexample}
+\codefamily
+\end{beamercolorbox}
+
+\end{frame}
+
+\section{Prolog basics}
+\begin{frame}
+\begin{itemize}
+\item CLP on first order terms. (Horn clauses).
+\item \structure{Unification}. Bidirectional.
+\item \structure{Backtracking}. Proof search based on trial of all matching
+	clauses.
+\end{itemize}
+\end{frame}
+
+\section{Prolog Terms}
+\begin{frame}
+\frametitle{Prolog Terms}
+\begin{itemize}
+\item Atoms:
+	\begin{enumerate}
+	\item Strings with starting with a small letter and consist of
+		\lstinline![a-zA-Z_0-9]*!
+	\item Strings consisting of only punctuation
+	\item Any string enclosed in back quotes
+	\end{enumerate}
+\item Numbers
+\item Variables:
+	\begin{enumerate}
+	\item Strings with starting with a capital letter or {\tt \_} and consist of
+		\lstinline![a-zA-Z_0-9]*!
+	\item {\tt \_} is the universal match symbol. Not variable
+	\end{enumerate}
+\end{itemize}
+\end{frame}
+\begin{frame}
+\begin{itemize}
+\item Structures:
+	\begin{itemize}
+	\item starts with an atom head
+	\item has one or more arguments encolsed in paranthesis, separated by comma
+	\item structure head cannot be a variable or anything other than atom.
+	\end{itemize}
+\end{itemize}
+\end{frame}
+\begin{frame}
+\begin{itemize}
+\item\ 
+\end{itemize}
+\end{frame}
+\end{document}

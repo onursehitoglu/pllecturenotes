@@ -1,0 +1,603 @@
+%\documentclass[compress,dvips,xcolor=table]{beamer}
+\usepackage{etex}
+%\documentclass{article}
+%\usepackage{beamerarticle}
+\usepackage{pstricks,pst-node} % PSTricks package
+%\usepackage[turkish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{multicol}
+%\includeonlyframes{current}
+
+\def\circtxt#1{$\mathalpha \bigcirc \mkern-13mu \mathtt #1$}
+
+\mode<article>
+{
+  \usepackage{fullpage}
+  \usepackage{pgf}
+  \usepackage{hyperref}
+}
+
+\mode<presentation>
+{
+  \usetheme{metuceng}
+
+%  \setbeamercovered{transparent}
+}
+
+
+\title{Programming Language Concepts/Binding and Scope}
+\author{Onur Tolga Şehitoğlu}
+\institute[ODTÜ]{Bilgisayar Mühendisliği}
+\subject{Binding and Scope}
+\date{11 Mart 2008}
+
+\begin{document}
+\lstset{language=C,
+        basicstyle=\scriptsize\ttfamily,
+        keywordstyle=\color{blue!50!black}\bfseries,
+        identifierstyle=\color{blue!60!green}\sffamily,
+        stringstyle=\color{red!70!green}\ttfamily,
+	commentstyle=\color{blue!30!white}\itshape,
+        showstringspaces=true}
+\setbeamercolor{hexample}{bg=green!5!white,fg=black}%
+\setbeamercolor{cexample}{bg=blue!5!white,fg=black}%
+\setbeamercolor{pexample}{bg=orange!5!white,fg=black}%
+\setbeamercolor{oexample}{bg=violet!5!white,fg=black}%
+
+ \frame[plain]{\maketitle}
+ \begin{frame}
+ \frametitle{Outline}
+ \begin{multicols}{2}
+ \tableofcontents
+ \end{multicols}
+ \end{frame}
+\section{Binding}
+\begin{frame}
+\frametitle{Binding}
+\begin{itemize}[<+->]
+\item Most important feature of high level languages: programmers able to
+give names to program entities (variable, constant, function, type, ...).
+These names are called \structure{identifiers}.
+\item definition of an identifier $\leftrightarrows$ used position of an
+identifier. Formally:
+binding occurrence $\leftrightarrows$ applied occurrence.
+\item Identifiers are declared once, used $n$ times.
+\item Language should map which corresponds to which.
+\item \structure{Binding:} Finding the corresponding binding occurrence
+(definition/declaration) for an applied occurrence (usage) of an identifier.
+\end{itemize}
+\end{frame}
+
+\defverbatim[colored]\codescopefailC{
+\begin{lstlisting}[language={C},escapechar=\#]
+double f,y;
+int f() {  #\alert{$\times$ error!}#
+   ...
+}
+double y; #\alert{$\times$ error!}#
+\end{lstlisting}}
+\defverbatim[colored]\codescopeokC{
+\begin{lstlisting}[language={C},escapechar=\#]
+double y;
+int f() { 
+   double f;   #\color{green!60!black}{$\surd$ OK}#
+   int y ;     #\color{green!60!black}{$\surd$ OK.}#
+}
+\end{lstlisting}}
+
+\begin{frame}
+ for binding:
+\begin{enumerate}[<+->]
+ \item \structure{Scope of identifiers} should be known. What is the block
+ structure? Which blocks the identifier is available.
+ \item  What will happen if we use same identifier name again\\
+ ``C forbids reuse of same identifier name in the same scope. Same name can
+ be used in different nested blocks. The identifier inside
+ \structure{hides} the outside identifier''.
+\begin{columns}
+ \begin{column}{.5\linewidth}
+  \begin{beamercolorbox}{cexample}
+     \codescopefailC
+  \end{beamercolorbox}
+ \end{column}
+\begin{column}{.5\linewidth}
+  \begin{beamercolorbox}{cexample}
+ \codescopeokC
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\end{enumerate}
+\end{frame}
+
+\defverbatim[colored]\codeenvC{
+\begin{lstlisting}[language={C},escapechar=\#]
+struct Person { ... } x;
+int f(int a) { 
+   double y;
+   int x;
+   ... #\circtxt{1}#
+}
+int main() {
+   double a;
+   ... #\circtxt{2}#
+}
+\end{lstlisting}}
+\section{Environment}
+\begin{frame}
+ \frametitle{Environment}
+\begin{itemize}[<+->]
+ \item \structure{Environment}: The set of binding occurrences that are accessible at a
+ point in the program.
+\item Example: \\
+\begin{columns}
+
+\begin{column}{.45\linewidth}
+\begin{beamercolorbox}{cexample}
+ \codeenvC
+\end{beamercolorbox}
+\end{column}
+
+\begin{column}{.55\linewidth}\small
+\noindent
+O(\circtxt{1})=\{struct Person $\mapsto$ type, x $\mapsto$ int,\\
+f $\mapsto$ func, a $\mapsto$ int, y $\mapsto$ double\}\\[2em]
+O(\circtxt{2})=\{struct Person $\mapsto$ type,\\
+x $\mapsto$ struct Person, f $\mapsto$ func, a $\mapsto$ double,\\
+main $\mapsto$ func\}\\
+\end{column}
+\end{columns}
+
+\end{itemize}
+\end{frame}
+
+\section{Block Structure}
+\begin{frame}
+ \frametitle{Block Structure}
+\begin{itemize}[<+->]
+ \item  Program blocks define the scope of the identifiers declared inside. (boundary of the
+ definition validity) For variables, they also define the lifetime. 
+ \item Languages may have different block structures:
+\begin{itemize}
+\item[\bf C] function definitions and command blocks (\{ ... \}) define local scopes. Also each
+source code define a block.
+\item[\bf Java] Class definitions, class member function definitions, block commands define
+local scopes. Nested function definitions and namespaces possible.
+\item[\bf Haskell] `\texttt{let {\em definitions\/} in {\em expression\/}}' defines a block
+expression. Also `\texttt{ {\em expression \/} where {\em definitions\/}}' defines a block
+expression. (the definitions have a local scope and not accessible outside of the expression)
+\end{itemize}
+\item Block structure of the language is defined by the organization of the blocks.
+\end{itemize}
+\end{frame}
+
+\subsection{Monolithic block structure}
+\begin{frame}
+ \frametitle{Monolithic block structure}
+\begin{itemize}
+ \item Whole program is a block. All identifiers have global scope starting from the
+ definition.
+ \item \structure{Cobol} is a monolithic block structure language.\\
+\texttt{\begin{tabular}{|>{\columncolor{blue!15!white}}p{\linewidth}|}\hline
+   int x;\\
+   int y;\\
+   ....\\
+   ....\\ \hline
+\end{tabular}}
+\item In a long program with many identifiers, they share the same scope and they need to be
+distinct.
+\end{itemize}
+
+\end{frame}
+
+\subsection{Flat block structure}
+\begin{frame}
+ \frametitle{Flat block structure}
+\begin{itemize}
+ \item Program contains the global scope and only a single level local scope of function
+ definitions. No further nesting is possible.
+ \item \structure{Fortran} and partially \structure{C} has flat block structure.\\
+{\tiny \tt
+\begin{tabular}{|>{\columncolor{blue!15!white}}p{\linewidth}|} \hline
+   int x;\\
+   int y;\\
+   int f() \\
+   \ \begin{tabular}{|>{\columncolor{blue!10!white}}p{.8\linewidth}|} \hline
+   \{\ int a;\\
+   \ \ double b;\\
+   ... \\ 
+   \} \\ \hline
+   \end{tabular} \\[1em]
+   int g() \\
+   \ \begin{tabular}{|>{\columncolor{blue!10!white}}p{.8\linewidth}|} \hline
+   \{ \ int a;\\
+   \ \ double b;\\
+   ... \\ 
+   \}\\ \hline
+   \end{tabular}\\
+   ....\\ \hline
+\end{tabular}}
+\end{itemize}
+\end{frame}
+
+\subsection{Nested block structure}
+\begin{frame}
+ \frametitle{Nested block structure}
+\begin{itemize}
+ \item Multiple blocks with nested local scopes can be defined.
+ \item \structure{Pascal} and \structure{Java} have nested block structure.\\
+{\tiny \tt
+\begin{tabular}{|>{\columncolor{blue!15!white}}p{\linewidth}|} \hline
+   int x;\\
+   int f() \\
+   \ \begin{tabular}{|>{\columncolor{blue!10!white}}p{.8\linewidth}|} \hline
+   \{\ int a;\\
+     double g() \\
+\ \begin{tabular}{|>{\columncolor{blue!5!white}}p{.8\linewidth}|} \hline
+   \{\ int x;\\
+   ... \\ 
+   \} \\ \hline
+   \end{tabular} \\[1em]
+   ... \\ 
+   \} \\ \hline
+   \end{tabular} \\[1em]
+   int g() \\
+   \ \begin{tabular}{|>{\columncolor{blue!10!white}}p{.8\linewidth}|} \hline
+   \{ \ int h()\\
+   \begin{tabular}{|>{\columncolor{blue!5!white}}p{.8\linewidth}|} \hline
+   \{\ int x;\\
+   ... \\ 
+   \} \\ \hline
+   \end{tabular} \\[1em]
+   ... \\ 
+   \}\\ \hline
+   \end{tabular}\\
+   ....\\ \hline
+\end{tabular}}
+\item C block commands can be nested.
+\item GCC extensions to C allow nested function definitions.
+\end{itemize}
+\end{frame}
+
+
+\defverbatim[colored]\codehidingC{
+\begin{lstlisting}[language={C},escapechar=\#]
+int x,y;
+int f(double x) {
+   ...             // parameter x hides global x in f()
+}
+int g(double a) {
+    int y;         // local y hides global y in g()
+    double f;      // local f hides global f() in g()
+    ...
+}
+int main() {
+    int y;        // local y hides global y in main()
+}
+\end{lstlisting}}
+\section{Hiding}
+\begin{frame}
+ \frametitle{Hiding}
+\begin{itemize}
+ \item Identifiers defined in the inner local block hides the outer block identifiers with the
+ same name during their scope. They cannot be accessed within the inner block.
+\begin{beamercolorbox}{cexample}
+\codehidingC
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
+\section{Static vs Dynamic Scope/Binding}
+\begin{frame}
+ \frametitle{Static vs Dynamic Scope/Binding}
+The binding and scope resolution is done at compile time or run time? Two options:
+\begin{enumerate}
+ \item Static binding, static scope
+ \item Dynamic binding, dynamic scope
+\end{enumerate}
+\begin{itemize}
+ \item First defines scope and binding based on the lexical structure of the program and
+ binding is done at compile time.
+ \item Second activates the definitions in a block during the execution of the block. The
+ environment changes dynamically at run time as functions are called and returned.
+\end{itemize}
+\end{frame}
+
+\defverbatim[colored]\codestaticbindC{
+\begin{lstlisting}[language={C},escapechar=\#]
+int x=1,y=2;
+int f(int y) {
+     y=x+y;      
+     return x+y;
+}
+int g(int a) {
+    int x=3;       
+    y=x+x+a;    x=x+y;    y=f(x);
+    return x;
+}
+int main() {
+    int y=0;    int a=10;  
+    x=a+y;    y=x+a;    a=f(a);    a=g(a);
+    return 0;
+}
+\end{lstlisting}}
+\defverbatim[colored]\codestaticbindCR{
+\def\X{\color{green!60!black}\bf x}
+\def\gX{\color{red!60!black}\bf x}
+\def\Y{\color{green!60!black}\bf y}
+\def\mY{\color{red!60!black}\bf y}
+\def\fY{\color{yellow!60!black}\bf y}
+\def\gA{\color{yellow!60!black}\bf a}
+\def\mA{\color{red!60!black}\bf a}
+\begin{lstlisting}[language={C},escapechar=\#]
+int #\X#=1,#\Y#=2;
+int f(int #\fY#) {
+     #\fY#=#\X#+#\fY#;                 /* #\X# global, #\fY# local */
+     return #\X#+#\fY#;
+}
+int g(int #\gA#) {
+    int #\gX#=3;                 /* #\gX# local, #\Y# global */
+    #\Y#=#\gX#+#\gX#+#\gA#;    #\gX#=#\gX#+#\Y#;    #\Y#=f(#\gX#);
+    return #\gX#;
+}
+int main() {
+    int #\mY#=0;    int #\mA#=10;        /* #\X# global #\mY# local */
+    #\X#=#\mA#+#\mY#;    #\mY#=#\X#+#\mA#;    #\mA#=f(#\mA#);    #\mA#=g(#\mA#);
+    return 0;
+}
+\end{lstlisting}}
+\subsection{Static binding}
+\begin{frame}
+ \frametitle{Static binding}
+ \begin{itemize}
+  \item Programs shape is significant. Environment is based on the position in the source
+  (lexical scope)
+  \item Most languages apply static binding (C, Haskell, Pascal, Java, ...)
+   \only<2->{\begin{beamercolorbox}{cexample}
+   \codestaticbindCR
+   \end{beamercolorbox}}
+   \only<1->{\begin{beamercolorbox}{cexample}
+   \codestaticbindC
+   \end{beamercolorbox}}
+ \end{itemize}
+\end{frame}
+
+\defverbatim[colored]\codedynamicbindC{
+\begin{lstlisting}[language={C},escapechar=\#,basicstyle=\tiny\ttfamily,
+		numbers=left,numberstyle=\tiny,stepnumber=1]
+int x=1,y=2;
+int f(int y) {
+     y=x+y;      
+     return x+y;
+}
+int g(int a) {
+    int x=3;       
+    y=x+x+a;  x=x+y;    
+    y=f(x);
+    return x;
+}
+int main() {
+    int y=0;  int a=10;  
+    x=a+y;    y=x+a;    
+    a=f(a);   a=g(a);
+    return 0;
+}
+\end{lstlisting}}
+\subsection{Dynamic binding}
+\begin{frame}
+ \frametitle{Dynamic binding}
+ \begin{itemize}
+  \item Functions called update their declarations on the environment at \structure{run-time}.
+Delete them on return. Current stack of activated
+blocks is significant in binding.
+  \item Lisp and some script languages apply dynamic binding. 
+  \begin{columns}
+  \begin{column}{.35\linewidth}
+   \begin{beamercolorbox}{cexample}
+   \codedynamicbindC
+   \end{beamercolorbox}
+   \end{column}
+   \begin{column}{.65\linewidth}
+   \only<2->{
+   \def\T{\rule{0pt}{1em}\hspace*{1em}}
+   \noindent\tiny\begin{tabular}{rll}
+    & Trace & Environment (without functions)\\ \hline
+    & initial & \{x:gl, y:gl \} \\ \rowcolor{blue!5}
+   12& call main & \{x:gl, y:main, a:main \} \\ \rowcolor{blue!15}
+   15&\T call f(10)  & \{x:gl, y:f , a:main \} \\ \rowcolor{blue!15}
+   4&\T return f : 30 & back to environment before f  \\ \rowcolor{blue!5}
+   15& in main & \{x:gl, y:main, a:main \} \\ \rowcolor{blue!10}
+   15&\T call g(30) & \{x:g, y:main, a:g  \} \\ \rowcolor{blue!25}
+   9&\T\T call f(39) & \{x:g, y:f, a:g  \} \\ \rowcolor{blue!25}
+   4&\T\T return f : 117 & back to environment before f\\ \rowcolor{blue!10}
+   9&\T in g  & \{x:g, y:main, a:g  \} \\ \rowcolor{blue!10}
+   10&\T return g : 39 & back to environment before g \\ \rowcolor{blue!5}
+   15& in main & \{x:gl, y:main, a:main\} \\ \rowcolor{blue!5}
+   16& return main & x:gl=10, y:gl=2, y:main=117, a:main=39 \\
+   \end{tabular}
+   }
+   \end{column}
+   \end{columns}
+ \end{itemize}
+\end{frame}
+
+\section{Declarations}
+\begin{frame}
+\frametitle{Declarations}
+\begin{itemize}
+ \item Definitions vs Declarations
+ \item Sequential declarations
+ \item Collateral declarations
+ \item Recursive declarations
+ \item Collateral recursive declarations
+ \item Block commands
+ \item Block expressions
+\end{itemize}
+\end{frame}
+
+\subsection{Definitions and Declarations}
+\begin{frame}
+\frametitle{Definitions and Declarations}
+\begin{itemize}
+ \item \structure{Definition:} Creating a new name for an existing binding.
+ \item \structure{Declaration:} Creating a completely new binding.
+ \item in C: \texttt{struct Person} is a declaration. \texttt{typedef struct Person persontype}
+ is a definition.
+ \item in C++: \texttt{double x} is a declaration. \texttt{double \&y=x;} is a definition.
+ \item creating a new entity or not. Usually the distinction is not clear and used
+ interchangeably.
+\end{itemize}
+\end{frame}
+
+\subsection{Sequential Declarations}
+\begin{frame}
+\frametitle{Sequential Declarations}
+\begin{itemize}
+ \item \texttt{D$_1$ ; D$_2$ ; ... ; D$_n$}
+ \item Each declaration is available starting with the next line. \texttt{D$_1$} can be used in
+ \texttt{D$_2$} an afterwards,  \texttt{D$_2$} can be used in \texttt{D$_3$} and afterwards,...
+ \item Declared identifier is not available in preceding declarations.
+ \item Most programming languages provide only such declarations.
+\end{itemize}
+\end{frame}
+
+\subsection{Collateral Declarations}
+\begin{frame}
+\frametitle{Collateral Declarations}
+\begin{itemize}
+ \item \texttt{Start; D$_1$ and D$_2$ and ...  and T$_n$ ; End}
+ \item Each declaration is evaluated in the environment preceding the declaration group.
+ Declared identifiers are available only after all finish.
+\texttt{D$_1$},... \texttt{D$_n$} uses in the environment of \texttt{Start}. They are 
+available in the environment of \texttt{End}.
+ \item ML allows collateral declarations additionally.
+\end{itemize}
+\end{frame}
+
+\subsection{Recursive declarations}
+\begin{frame}
+\frametitle{Recursive declarations}
+\begin{itemize}
+ \item Declaration:\texttt{Name = Body}
+ \item The body of the declaration can access the declared identifier. Declaration is available
+ in the body of itself.
+ \item C functions and type declarations are recursive. Variable definitions are usually not
+ recursive. ML allows programmer to choose among recursive and non-recursive
+ function definitions.
+\end{itemize}
+\end{frame}
+
+\subsection{Recursive Collateral Declarations}
+\begin{frame}
+\frametitle{Recursive Collateral Declarations}
+\begin{itemize}
+ \item All declarations can access the others regardless of their order.
+ \item All Haskell declarations are recursive collateral (including variables)
+ \item All declarations are mutually recursive.
+ \item ML allows programmer to do such definitions.
+ \item C++ class members are like this.
+ \item in C a similar functionality can be achieved by prototype definitions.
+\end{itemize}
+\end{frame}
+
+\defverbatim[colored]\codeblokexpH{
+\begin{lstlisting}[language={Haskell},escapechar=\#]
+x=5
+t=let xsquare=x*x
+       factorial n = if n<2 then 1 else n*factorial (n-1)
+       xfact = factorial x
+   in  (xsquare+1)*xfact/(xfact*xsquare+2)
+\end{lstlisting}}
+\subsection{Block Expressions}
+\begin{frame}
+\frametitle{Block Expressions}
+\begin{itemize}
+ \item Allows an expression to be evaluated in a special local environment. Declarations done
+ in the block is not available outside.
+ \item in Haskell: \texttt{let D$_1$; D$_2$;  ... ; D$_n$ in {\em Expression\/} } or
+ \texttt{{\em Expression\/} where D$_1$; D$_2$;  ... ; D$_n$} 
+ \item \ \\
+\begin{beamercolorbox}{hexample}
+\codeblokexpH
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
+\defverbatim[colored]\codeblokexpH{
+\begin{lstlisting}[language={Haskell},escapechar=\#]
+x=5 ; y=6 ; z = 3
+t=let x=1 
+  in let y=2 
+     in   x+y+z
+{-- t is 1+2+3 here. local x and y hides the ones above --}
+\end{lstlisting}}
+\begin{frame}
+\begin{itemize}
+ \item Hiding works in block expressions as expected:\\
+\begin{beamercolorbox}{hexample}
+ \codeblokexpH
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
+\defverbatim[colored]\codeblokcomC{
+\begin{lstlisting}[language={C},escapechar=\#]
+int x=3,i=2;
+x+=i;
+while (x>i) { 
+    int i=0;
+    ...
+    i++;
+}
+/* i is 2 again */
+\end{lstlisting}}
+\subsection{Block Commands}
+\begin{frame}
+\frametitle{Block Commands}
+\begin{itemize}
+ \item Similar to block expressions, declarations done inside a block command is available only
+ during the block. Statements inside work in this environment. The declarations lost outside of
+ the block. 
+ \item \ \\
+\begin{beamercolorbox}{cexample}
+\codeblokcomC
+\end{beamercolorbox}
+\end{itemize}
+
+\end{frame}
+
+\defverbatim[colored]\codeblokdecH{
+\begin{lstlisting}[language={Haskell},escapechar=\#]
+fifthpower x = (forthpowerx) * x where
+		squarex = x*x
+		forthpowerx = squarex*squarex
+\end{lstlisting}}
+\subsection{Block Declarations}
+\begin{frame}
+\frametitle{Block Declarations}
+\begin{itemize}
+ \item A declaration is made in a local environment of declarations. Local declarations
+ 	are not made available to the outer environment.
+ \item in Haskell: \texttt{D$_{exp}$ where D$_1$; D$_2$;  ... ; D$_n$}\\
+ 	Only \texttt{D$_{exp}$} is added to environment. Body of \texttt{D$_{exp}$} has all local
+	declarations available in its environment.
+\begin{beamercolorbox}{hexample}
+ \codeblokdecH
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+\begin{itemize}
+\item Binding, scope, environment
+\item Block structure
+\item Hiding
+\item Static vs Dynamic binding
+\item Declarations
+\item Sequential, recursive, collateral
+\item Expression, command and declaration blocks
+\end{itemize}
+\end{frame}
+\end{document}

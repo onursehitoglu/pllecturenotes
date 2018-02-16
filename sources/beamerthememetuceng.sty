@@ -1,0 +1,66 @@
+\definecolor{metulogo}{rgb}{0.88671875, 0.09375, 0.21484375}
+\definecolor{metugray}{rgb}{0.44140625, 0.4375, 0.44921875}
+\newcommand*{\metufont}{\usefont{T1}{bourgs}{b}{n}}
+
+\mode<presentation>
+
+%% Themes
+% Outer themes
+\useoutertheme{shadow}
+% Color themes
+\usecolortheme{orchid}
+\usecolortheme{whale}
+% Rounded boxes and shadows
+\useinnertheme[shadow=true]{rounded}
+% Solid \item symbols
+\useinnertheme{rectangles}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+%% Custom colors
+%\setbeamerfont{block title}{size={}}
+\definecolor{metustructurecolor}{RGB}{10,70,150}
+\setbeamercolor{structure}{fg=metustructurecolor}
+\setbeamercolor{item}{fg=red!40!black}
+\def\insertmetutitle{\includegraphics[height=8mm]{metu-logo-name}}
+\def\insertlicense{\tikz [remember picture,overlay] \node [above=0pt of current page.south west,anchor=south west] {\href{https://creativecommons.org/licenses/by-sa/4.0/legalcode}{\includegraphics[height=4mm]{by-sa}}};}
+
+
+% Hide navigation symbols
+%\setbeamertemplate{navigation symbols}{}
+
+%% Title block
+\definecolor{beamer@darkred}{RGB}{90,0,0}
+\setbeamercolor*{title}{use=structure,fg=white,bg=beamer@darkred}
+
+
+
+\setbeamertemplate{headline}{%
+\leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.125ex]{palette secondary}%
+    \insertsectionnavigationhorizontal{\paperwidth}{}{\hskip0pt plus1filll}
+    \end{beamercolorbox}%
+  }
+}
+
+
+
+%% Bottom infolines
+\setbeamercolor{footline}{bg=metustructurecolor,fg=white!70!black}
+\setbeamertemplate{footline}
+{
+  \leavevmode%
+	\begin{beamercolorbox}[ht=2.5ex,dp=1.125ex,%
+	leftskip=.3cm,rightskip=.3cm plus1fil]{footline}
+	\hspace*{5pt}%
+	\raisebox{-.25\height}{\includegraphics[height=1.2em]{metu-official-logo}}
+	{\metufont \color{metugray} METU \hspace*{1em}
+	 Computer Engineering} \hspace*{3em} \insertshorttitle\hspace{1pt}/\hspace{1pt}\insertshortsubtitle \hfill \insertframenumber\hspace{1pt}/\hspace{1pt}\inserttotalframenumber\hspace*{4ex}
+  \end{beamercolorbox}
+  \vskip0pt%
+}
+
+\mode
+<all>
