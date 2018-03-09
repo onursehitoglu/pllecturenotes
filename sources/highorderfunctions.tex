@@ -1,0 +1,506 @@
+\usepackage{etex}
+%\documentclass{article}
+%\usepackage{beamerarticle}
+%\usepackage{pstricks,pst-node} % PSTricks package
+%\usepackage[turkish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+%\includeonlyframes{current}
+\usepackage[graph,arrow,curve]{xy}
+
+\newcommand{\aequiv}{\mathop{\equiv_{\alpha}}}
+
+\mode<article>
+{
+  \usepackage{fullpage}
+  \usepackage{pgf}
+  \usepackage{hyperref}
+}
+
+\mode<presentation>
+{
+  \usetheme{metuceng}
+  \setbeamercovered{transparent}
+}
+
+
+\titlegraphic{\insertmetutitle\insertlicense}
+
+
+\title{Programming Language Concepts}
+\author{Onur Tolga Şehitoğlu}
+\institute[METU]{Computer Engineering}
+\subtitle{Higher Order Functions}
+\date{}
+
+\begin{document}
+\lstset{language=C,
+        basicstyle=\scriptsize\ttfamily,
+        keywordstyle=\color{blue!50!black}\bfseries,
+        identifierstyle=\color{blue!60!green}\sffamily,
+        stringstyle=\color{red!70!green}\ttfamily,
+	commentstyle=\color{blue!30!white}\itshape,
+        showstringspaces=true}
+\setbeamercolor{hexample}{bg=green!5!white,fg=black}%
+\setbeamercolor{cexample}{bg=blue!5!white,fg=black}%
+\setbeamercolor{pexample}{bg=orange!5!white,fg=black}%
+\setbeamercolor{oexample}{bg=violet!5!white,fg=black}%
+
+ \frame[plain]{\maketitle}
+
+ \begin{frame}
+ \frametitle{Outline}
+\small
+ \tableofcontents
+ \end{frame}
+
+\section{Lambda Calculus}
+\begin{frame}
+\frametitle{Lambda Calculus}
+\begin{itemize}
+ \item 1930's by Alonso Church and Stephen Cole Kleene
+ \item Mathematical foundation for computatibility and recursion
+ \item Simplest functional paradigm language
+ \item $\lambda var . expr$ \\
+	defines an anonymous function. Also called \structure{lambda 
+	abstraction}
+ \item $expr$ can be any expression with other lambda abstractions and 
+	applications. Applications are one at a time.
+ \item $(\lambda x . \lambda y . x+y) \; 3 \; 4$ 
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+ \begin{itemize}
+  \item In `$\lambda var . expr$ ' all free occurences of $var$ is bound by the $\lambda var$.
+  \item Free variables of expression $FV(expr)$\\
+	\begin{itemize}
+	\item $FV(name) = \{ name \} $ if $name$ is a variable
+        \item $FV(\lambda name. expr)= FV(expr) - \{name\}$
+        \item $FV(M \; N) = FV(M) \cup FV(N)$
+        \end{itemize}
+  \item \structure{$\alpha$ conversion}: expressions with all bound names changed to another name are equivalent:\\
+	$\lambda f. f \; x \aequiv \lambda y. y \; x \aequiv \lambda z. z \; x$ \\
+        $\lambda x. x + (\lambda x. x+y) \aequiv \lambda t. t + (\lambda x. x+y)
+	\aequiv \lambda t. t + (\lambda u. u+y)$\\
+        $\lambda x. x + (\lambda x. x+y) \not\equiv_{\alpha} \lambda x. x + (\lambda x. x+t)$
+ \end{itemize}
+\end{frame}
+
+\begin{frame}
+ \frametitle{ $\beta$ Reduction}
+\begin{itemize}
+ \item Basic computation step, function application in $\lambda$-calculus
+ \item Based on substitution. All bound occurences of $\lambda$ variable parameter is substituted by the
+       actual parameter
+ \item $(\lambda x . M) N \mapsto_{\beta} M [x/N]$ (all $x$'s once bound by lambda are substituted with $N$).
+ \item $(\lambda x.(\lambda y.y+(\lambda x.x+1)\;y) (x+2))\; 5$
+ \item If no further $\beta$ reduction is possible, it is called a normal form.
+ \item There can be different reduction strategies but should reduce to 
+	same normal form. (Church Rosser property)
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+All possible reductions of a $\lambda$-expression. All reduce to the
+same normal form.\\
+\tiny
+\xygraph{[]!{<14mm,0mm>:<0mm,8mm>::}
+{\lambda x.(\lambda y.y+(\lambda x.x+1~y)~~(x+2))~~5}
+ ( :@{|->}[dll] {\lambda y.y+(\lambda x.x+1~~y)~~(5+2)} 
+	( :@{|->}[dl] {5+2+(\lambda x.x+1~~(5+2))}
+		( :@{|->}[ddddrrr] {5+2+5+2+1}="bot" ) ,
+	  :@{|->}@(dr,ur)[dddl] {\lambda y.y+y+1~~(5+2)} :@{|->}"bot"
+	),
+   :@{|->}[dd]  {\lambda x.x+2+(\lambda x.x+1~~(x+2))~5} 
+	(
+   	:@{|->}[dl]  {5+2+(\lambda x.x+1~~(5+2))} :@{|->}"bot",
+   	:@{|->}[dr]  {\lambda x.x+2+x+2+1~~5} :@{|->}"bot"
+	),
+   :@{|->}[drr] {\lambda x.(\lambda y.y+y+1~~(x+2))~~5} (
+	   :@{|->}[ddr] {\lambda y.y+y+1~~(5+2)} :@{|->}@(dr,r)"bot",
+	   :@{|->}[ddd] {\lambda x.x+2+x+2+1~~5} :@{|->}"bot")
+ )
+}
+\end{frame}
+
+
+
+\defverbatim[colored]\codecomposeH{
+\begin{lstlisting}[language={Haskell}]
+f x = x+x
+g x = x*x
+compose func1 func2 x = func1 (func2 x)
+t = compose f g
+u = compose g f
+\end{lstlisting}}
+\section{Introduction}
+\begin{frame}
+\frametitle{Introduction}
+\begin{itemize}[<+->]
+\item Mathematics:\\
+	$(f \circ g )(x) = f(g(x))$ , $(g \circ f) (x) = g(f(x))$
+\item ``$\circ$'' : Gets two unary functions and composes a new function.
+A function getting two functions and returning a new function.
+\item in Haskell:
+\begin{beamercolorbox}{hexample}
+\codecomposeH
+\end{beamercolorbox}
+\item \texttt{\small t 3 = (3*3)+(3*3) = 18}\\
+	\texttt{\small u 3 = (3+3)*(3+3) = 36}
+\item \texttt{compose}: $(\beta \rightarrow \gamma) \rightarrow (\alpha \rightarrow \beta) \rightarrow \alpha \rightarrow \gamma$
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{itemize}[<+->]
+ \item ``\texttt{compose}'' function is a function getting two functions as
+ parameters and returning a new function.
+ \item Functions getting one or more functions as parameters are called
+ \structure{Higher Order Functions}.
+ \item Many operations on functional languages are repetition of a basic
+ task on data structures.
+ \item Functions are first order values $\rightarrow$ new general purpose 
+ functions that uses other functions are possible.
+\end{itemize}
+\end{frame}
+
+\defverbatim[colored]\codecurryH{
+\begin{lstlisting}[language={Haskell}]
+curry f x y = f(x,y)
+add (x,y) = x+y
+increment = curry add 1
+---
+increment 5
+6
+\end{lstlisting}}
+\section{Functions}
+\subsection{Curry}
+\begin{frame}
+\frametitle{Functions/Curry}
+\begin{itemize}
+\item Cartesian form vs curried form:\\
+	$\alpha \times \beta \rightarrow \gamma$ vs 
+	$\alpha \rightarrow \beta \rightarrow \gamma$
+\item Curry function gets a binary function in cartesian form and converts it to curried form.
+\begin{beamercolorbox}{hexample}
+\codecurryH
+\end{beamercolorbox}
+ \item \texttt{curry}:
+	$(\alpha \times \beta \rightarrow \gamma) \rightarrow
+	\alpha \rightarrow \beta \rightarrow \gamma$
+ \item Haskell library includes it as \structure{\texttt{curry}}.
+\end{itemize}
+\end{frame}
+
+\defverbatim[colored]\codemapH{
+\begin{lstlisting}[language={Haskell}]
+square x = x*x
+day no = case no of 1 -> "mon" ; 2 -> "tue" ; 3 -> "wed"; 
+        4 -> "thu" ; 5 -> "fri" ; 6 -> "sat" ; 7 -> "sun"
+map func [] = []
+map func (el:rest) = (func el):(map func rest)
+----
+map square [1,3,4,6]
+[1,9,6,36]
+map day [1,3,4,6]
+["mon","wed","thu","sat"]
+\end{lstlisting}}
+
+\subsection{Map}
+\begin{frame}
+\frametitle{Functions/Map}
+\begin{beamercolorbox}{hexample}
+\codemapH
+\end{beamercolorbox}
+\begin{itemize}
+ \item \texttt{map}:$(\alpha \rightarrow \beta) \rightarrow [\alpha] \rightarrow  [\beta]$
+ \item Gets a function and a list. Applies the function to all elements and 
+ returns a new list of results.
+ \item Haskell library includes it as \structure{\texttt{map}}.
+\end{itemize}
+\end{frame}
+
+\defverbatim[colored]\codefilterH{
+\begin{lstlisting}[language={Haskell}]
+iseven x = if mod x 2 == 0 then True else False 
+isgreater x = x>5
+
+filter func [] = []
+filter func (el:rest) = if func el then  
+                                el:(filter func rest)
+                          else  (filter func rest)
+----
+filter iseven [1,2,3,4,5,6,7]
+[2,4,6]
+filter isgreater [1,2,3,4,5,6,7]
+[6,7]
+\end{lstlisting}}
+
+\subsection{Filter}
+\begin{frame}
+\frametitle{Functions/Filter}
+\begin{beamercolorbox}{hexample}
+\codefilterH
+\end{beamercolorbox}
+\begin{itemize}
+ \item \texttt{filter}:$(\alpha \rightarrow Bool) \rightarrow [\alpha] \rightarrow  [\alpha]$
+ \item Gets a boolean function and a list. Returns a list with only members
+ evaluated to \texttt{True} by the boolean function.
+ \item Haskell library includes it as \structure{\texttt{filter}}.
+
+\end{itemize}
+\end{frame}
+
+\defverbatim[colored]\codereduceH{
+\begin{lstlisting}[language={Haskell}]
+sum x y = x+y
+product x y = x*y
+
+reduce func s [] = s
+reduce func s (el:rest) = func el (reduce func s rest)
+----
+reduce sum 0 [1,2,3,4]
+10                             // 1+2+3+4+0
+reduce product 1 [1,2,3,4]
+24                             // 1*2*3*4*1
+\end{lstlisting}}
+
+\subsection{Reduce}
+\begin{frame}
+\frametitle{Functions/Reduce (Fold Right)}
+\begin{beamercolorbox}{hexample}
+\codereduceH
+\end{beamercolorbox}
+\begin{itemize}
+ \item \texttt{reduce}:$(\alpha \rightarrow \beta \rightarrow \beta) \rightarrow \beta  \rightarrow  [\alpha] \rightarrow \beta$
+ \item Gets a binary function, a list and a seed element. Applies function
+ to all elements right to left with a single value.\\
+	$reduce\;f\;s\;[a_1,a_2,...,a_n] = f\;a_1\;(f\;a_2\;(....\;(f\;a_n\;s)))$
+ \item Haskell library includes it as  \structure{\texttt{foldr}}.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+ \begin{itemize}
+  \item Sum of a numbers in a list:\\
+\texttt{listsum = reduce sum 0}
+  \item Product of a numbers in a list:\\
+\texttt{listproduct = reduce product 1}
+  \item Sum of squares of a list:\\
+\texttt{squaresum x = reduce sum 0 (map square x)}
+ \end{itemize}
+\end{frame}
+
+
+\defverbatim[colored]\codefoldlH{
+\begin{lstlisting}[language={Haskell}]
+subtract x y = x - y
+foldl func s [] = s
+foldl func s (el:rest) = 
+           foldl func (func s el) rest
+----
+reduce subtract 0 [1,2,3,4]
+-2                             // 1-(2-(3-(4-0)))
+foldl subtract 0 [1,2,3,4]
+-10                            // ((((0-1)-2)-3)-4)
+\end{lstlisting}}
+\subsection{Fold Left}
+\begin{frame}
+\frametitle{Functions/Fold Left}
+\begin{beamercolorbox}{hexample}
+\codefoldlH
+\end{beamercolorbox}
+\begin{itemize}
+ \item \texttt{foldl}:$(\alpha \rightarrow \beta \rightarrow \alpha) \rightarrow \alpha  \rightarrow  [\beta] \rightarrow \alpha$
+ \item Reduce operation, left associative.: \\
+	$reduce\;f\;s\;[a_1,a_2,...,a_n] = f\;(f\;(f\;...(f\;s\;a_1)\;a_2\;...))\;a_n$
+ \item Haskell library includes it as \structure{\texttt{foldl}}.
+\end{itemize}
+\end{frame}
+
+
+\defverbatim[colored]\codeiterH{
+\begin{lstlisting}[language={Haskell}]
+twice x = 2*x
+
+iterate func s 0 = s
+iterate func s n = func (iterate func s (n-1))
+----
+iterate twice 1 4
+16                       // twice (twice ( twice (twice 1))
+iterate square 3 3
+6561                     // square (square (square 3))
+\end{lstlisting}}
+
+\subsection{Iterate}
+\begin{frame}
+\frametitle{Functions/Iterate}
+\begin{beamercolorbox}{hexample}
+\codeiterH
+\end{beamercolorbox}
+\begin{itemize}
+ \item \texttt{iterate}:$(\alpha \rightarrow \alpha) \rightarrow \alpha \rightarrow int  \rightarrow  \alpha$
+ \item Applies same function for given number of times, starting with the
+ initial seed value.
+	$iterate\;f\;s\;n = f^n\;s = \underbrace{f\;(f\;(f\;...(f\;s))}_n$
+\end{itemize}
+\end{frame}
+
+
+\defverbatim[colored]\codeforH{
+\begin{lstlisting}[language={Haskell}]
+for func s m n = 
+      if m>n then s
+      else for func (func s m) (m+1) n
+
+----
+for sum 0 1 4
+10        // sum (sum (sum (sum 0 1) 2) 3) 4
+for product 1 1 4 
+24        // product (product (product (product 1 1) 2) 3) 4
+\end{lstlisting}}
+\subsection{Value Iteration (for)}
+\begin{frame}
+\frametitle{Functions/Value Iteration (for)}
+\begin{beamercolorbox}{hexample}
+\codeforH
+\end{beamercolorbox}
+\begin{itemize}
+ \item \texttt{for}:$(\alpha \rightarrow int \rightarrow \alpha) \rightarrow \alpha \rightarrow int  \rightarrow  int \rightarrow \alpha$
+ \item Applies a binary integer function to a range of integers in order.\\
+ $for\;f\;s\;m\;n = f(f\;(f\;(f\;(f\;s\;m)\;(m+1))\;(m+2))\;...)\;n$
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+ \begin{itemize}
+  \item multiply (with summation):\\
+\texttt{multiply x = iterate (sum x) x}
+  \item integer power operation (Haskell '\lstinline{^}'):\\
+\texttt{power x = iterate (product x) x}
+  \item sum of values in range 1 to  n:\\
+\texttt{seriessum = for sum 0 1}
+  \item Factorial operation:\\
+\texttt{factorial = for product 1 1}
+ \end{itemize}
+\end{frame}
+
+
+\defverbatim[colored]\codesortC{
+\begin{lstlisting}[language={C}]
+typedef struct Person { char name[30]; int no;} person;
+int cmpnmbs(void *a, void *b) {
+    person *ka=(person *)a; person *kb=(person *)b;
+    return ka->no - kb->no;
+}
+int cmpnames(void *a, void *b) {
+    person *ka=(person *)a; person *kb=(person *)b;
+    return strncmp(ka->name,kb->name,30);
+}
+int main() {       int i;
+    person list[]={{"veli",4},{"ali",12},{"ayse",8},
+                  {"osman",6},{"fatma",1},{"mehmet",3}};
+    qsort(list,6,sizeof(person),cmpnmbs);
+    ...
+    qsort(list,6,sizeof(person),cmpnames);
+    ...
+}
+\end{lstlisting}}
+\section{Higher Order Functions in C}
+\begin{frame}
+\frametitle{Higher Order Functions in C}
+C allows similar definitions based on function pointers.
+Example: \structure{bsearch()} and \structure{qsort()} funtions in C library.
+\begin{beamercolorbox}{cexample}
+\codesortC
+\end{beamercolorbox}
+\end{frame}
+
+\defverbatim[colored]\codefibH{
+\begin{lstlisting}[language={Haskell}]
+fib n = let f (x,y) = (y,x+y)
+            (a,b) = iterate f (0,1) n
+        in b
+----
+fib 5      // f(f(f(f(0,1)))) 
+8          //(0,1)->(1,1)->(1,2)->(2,3)->(3,5)->(5,8)
+\end{lstlisting}}
+\section{Some examples}
+\subsection{Fibonacci}
+\begin{frame}
+\frametitle{Fibonacci}
+ Fibonacci series: 1 1 2 3 5 8 13 21 .. \\
+ $fib(0) = 1 \;\;; \; fib(1) = 1\;\;; \; fib(n) = fib(n-1)+fib(n-2)$\\
+\begin{beamercolorbox}{hexample}
+\codefibH
+\end{beamercolorbox}
+\end{frame}
+
+\defverbatim[colored]\codesortH{
+\begin{lstlisting}[language={Haskell}]
+notfunc f x y = not (f x y)
+
+sort _ [] = []
+sort func (x:xs) = (sort func (filter (func x) xs)) ++ 
+                (x: (sort func (filter ((notfunc func) x) xs)))
+---
+sort (>) [5,3,7,8,9,3,2,6,1]
+[1,2,3,3,5,6,7,8,9]
+sort (<) [5,3,7,8,9,3,2,6,1]
+[9,8,7,6,5,3,3,2,1]
+\end{lstlisting}}
+
+\subsection{Sorting}
+\begin{frame}
+\frametitle{Sorting}
+ Quicksort:
+\begin{enumerate}
+ \item First element of the list is \texttt{x} and rest is \texttt{xs}
+ \item select smaller elements of \texttt{xs} from \texttt{x}, sort them and put before
+ \texttt{x}.
+ \item select greater elements of \texttt{xs} from \texttt{x}, sort them and put after
+ \texttt{x}.
+\end{enumerate}
+\begin{beamercolorbox}{hexample}
+\codesortH
+\end{beamercolorbox}
+\end{frame}
+
+\defverbatim[colored]\codetersH{
+\begin{lstlisting}[language={Haskell}]
+reverse1 [] = []
+reverse1 (x:xs) = (reverse1 xs) ++ [x]
+
+reverse2 x = reverse2' x []  where
+        reverse2' [] x = x
+	reverse2' (x:xs) y = reverse2' xs (x:y)
+---
+reverse1 [1..10000]        // slow
+reverse2 [1..10000]        // fast
+\end{lstlisting}}
+
+\subsection{List Reverse}
+\begin{frame}
+\frametitle{List Reverse}{\scriptsize
+\begin{itemize}[<+->]
+\item  Taking the reverse
+\begin{itemize}\scriptsize
+ \item First element is \texttt{x} rest is \texttt{xs}
+ \item Reverse the \texttt{xs},  append \texttt{x} at the end
+\end{itemize}
+Loose time for appending \texttt{x} at the end at each step ($N$ times append of size $~ N$).
+\item Fast version, extra parameter (initially empty list) added:
+\begin{itemize}\scriptsize
+ \item Take the first element, insert at the beginning of the extra parameter.
+ \item Recurse rest of the list with the new extra parameter. 
+ \item When recursion at the deepest, return the extra parameter.
+\end{itemize}
+Inserts to the beginning of the list at each step. Faster ($N$ times insertion)
+\end{itemize}}
+\begin{beamercolorbox}{hexample}
+\codetersH
+\end{beamercolorbox}
+\end{frame}
+\end{document}
