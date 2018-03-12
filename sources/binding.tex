@@ -2,7 +2,7 @@
 \usepackage{etex}
 %\documentclass{article}
 %\usepackage{beamerarticle}
-\usepackage{pstricks,pst-node} % PSTricks package
+%\usepackage{pstricks,pst-node} % PSTricks package
 %\usepackage[turkish]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
@@ -30,7 +30,7 @@
 \author{Onur Tolga Şehitoğlu}
 \institute[ODTÜ]{Bilgisayar Mühendisliği}
 \subject{Binding and Scope}
-\date{11 Mart 2008}
+\date{}
 
 \begin{document}
 \lstset{language=C,
@@ -140,11 +140,12 @@ int main() {
 
 \begin{column}{.55\linewidth}\small
 \noindent
-O(\circtxt{1})=\{struct Person $\mapsto$ type, x $\mapsto$ int,\\
-f $\mapsto$ func, a $\mapsto$ int, y $\mapsto$ double\}\\[2em]
+O(\circtxt{1})=\{struct Person $\mapsto$ type,\\
+ x $\mapsto$ int, f $\mapsto$ func, a $\mapsto$ int, \\
+y $\mapsto$ double\}\\[2em]
 O(\circtxt{2})=\{struct Person $\mapsto$ type,\\
-x $\mapsto$ struct Person, f $\mapsto$ func, a $\mapsto$ double,\\
-main $\mapsto$ func\}\\
+x $\mapsto$ struct Person, f $\mapsto$ func, \\
+a $\mapsto$ double, main $\mapsto$ func\}\\
 \end{column}
 \end{columns}
 
@@ -353,10 +354,10 @@ int main() {
   \item Programs shape is significant. Environment is based on the position in the source
   (lexical scope)
   \item Most languages apply static binding (C, Haskell, Pascal, Java, ...)
-   \only<2->{\begin{beamercolorbox}{cexample}
+   \only<2>{\begin{beamercolorbox}{cexample}
    \codestaticbindCR
    \end{beamercolorbox}}
-   \only<1->{\begin{beamercolorbox}{cexample}
+   \only<1>{\begin{beamercolorbox}{cexample}
    \codestaticbindC
    \end{beamercolorbox}}
  \end{itemize}
@@ -402,23 +403,53 @@ blocks is significant in binding.
    \def\T{\rule{0pt}{1em}\hspace*{1em}}
    \noindent\tiny\begin{tabular}{rll}
     & Trace & Environment (without functions)\\ \hline
-    & initial & \{x:gl, y:gl \} \\ \rowcolor{blue!5}
-   12& call main & \{x:gl, y:main, a:main \} \\ \rowcolor{blue!15}
-   15&\T call f(10)  & \{x:gl, y:f , a:main \} \\ \rowcolor{blue!15}
+    & initial & \{x:GL, y:GL \} \\ \rowcolor{blue!5}
+   12& call main & \{x:GL, y:main, a:main \} \\ \rowcolor{blue!15}
+   15&\T call f(10)  & \{x:GL, y:f , a:main \} \\ \rowcolor{blue!15}
    4&\T return f : 30 & back to environment before f  \\ \rowcolor{blue!5}
-   15& in main & \{x:gl, y:main, a:main \} \\ \rowcolor{blue!10}
+   15& in main & \{x:GL, y:main, a:main \} \\ \rowcolor{blue!10}
    15&\T call g(30) & \{x:g, y:main, a:g  \} \\ \rowcolor{blue!25}
    9&\T\T call f(39) & \{x:g, y:f, a:g  \} \\ \rowcolor{blue!25}
    4&\T\T return f : 117 & back to environment before f\\ \rowcolor{blue!10}
    9&\T in g  & \{x:g, y:main, a:g  \} \\ \rowcolor{blue!10}
    10&\T return g : 39 & back to environment before g \\ \rowcolor{blue!5}
-   15& in main & \{x:gl, y:main, a:main\} \\ \rowcolor{blue!5}
-   16& return main & x:gl=10, y:gl=2, y:main=117, a:main=39 \\
+   15& in main & \{x:GL, y:main, a:main\} \\ \rowcolor{blue!5}
+   16& return main & x:GL=10, y:GL=2, y:main=117, a:main=39 \\
    \end{tabular}
    }
    \end{column}
    \end{columns}
  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{itemize}
+\item It gets more complicated if nested functions are allowed:
+\begin{beamercolorbox}{hexample}
+\begin{lstlisting}[language=Haskell]
+let x = 5
+    y = 10
+    func x = x * x + other y
+    other x = x + x
+in func x + let other x = x - 1
+                y = 2
+            in func x
+\end{lstlisting}
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
+\section{Binding Process}
+\begin{frame}
+\frametitle{Binding Process}
+\begin{itemize}
+\item Language processor keeps track of current environment in a data structure called \structure{Symbol Table} or \structure{Identifier Table}
+\item Symbol table maps identifier strings to their type and binding.
+\item Each new block introduces its declarations/bindings to the symbol table and on exit, they are cleared.
+\item Usually implemented as a Hash Table. 
+\item For static binding, Symbol Table is a compile time data structure and maintained during different stages of compilation.
+\item For dynamic binding, symbol table is maintained at run time.
+\end{itemize}
 \end{frame}
 
 \section{Declarations}
@@ -500,50 +531,56 @@ available in the environment of \texttt{End}.
 \end{itemize}
 \end{frame}
 
-\defverbatim[colored]\codeblokexpH{
-\begin{lstlisting}[language={Haskell},escapechar=\#]
-x=5
-t=let xsquare=x*x
-       factorial n = if n<2 then 1 else n*factorial (n-1)
-       xfact = factorial x
-   in  (xsquare+1)*xfact/(xfact*xsquare+2)
-\end{lstlisting}}
 \subsection{Block Expressions}
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Block Expressions}
 \begin{itemize}
  \item Allows an expression to be evaluated in a special local environment. Declarations done
  in the block is not available outside.
  \item in Haskell: \texttt{let D$_1$; D$_2$;  ... ; D$_n$ in {\em Expression\/} } or
  \texttt{{\em Expression\/} where D$_1$; D$_2$;  ... ; D$_n$} 
- \item \ \\
 \begin{beamercolorbox}{hexample}
-\codeblokexpH
-\end{beamercolorbox}
+\begin{lstlisting}[language={Haskell},escapechar=\#]
+x=5
+t=let xsquare=x*x
+      factorial n = if n<2 then 1 else n*factorial (n-1)
+      xfact = factorial x
+  in  (xsquare+1)*xfact/(xfact*xsquare+2)
+\end{lstlisting}\end{beamercolorbox}
 \end{itemize}
 \end{frame}
 
-\defverbatim[colored]\codeblokexpH{
+\begin{frame}[fragile]
+\begin{itemize}
+ \item Hiding works in block expressions as expected:
+\begin{beamercolorbox}{hexample}
 \begin{lstlisting}[language={Haskell},escapechar=\#]
 x=5 ; y=6 ; z = 3
 t=let x=1 
   in let y=2 
      in   x+y+z
 {-- t is 1+2+3 here. local x and y hides the ones above --}
-\end{lstlisting}}
-\begin{frame}
-\begin{itemize}
- \item Hiding works in block expressions as expected:\\
-\begin{beamercolorbox}{hexample}
- \codeblokexpH
+\end{lstlisting}
 \end{beamercolorbox}
+ \item GCC (only GCC) block expressions has the last expression in block as the value:
+\begin{beamercolorbox}{cexample}
+\begin{lstlisting}[language=C,escapechar=\#]
+ double min ;
+ ...
+ min = ({ double tmp;
+          if (b < a) then {
+             tmp = a;  a = b ; b = tmp;
+          }
+          a; // this is the value of the block
+         });
+\end{lstlisting}\end{beamercolorbox}
 \end{itemize}
 \end{frame}
 
 \defverbatim[colored]\codeblokcomC{
 \begin{lstlisting}[language={C},escapechar=\#]
-int x=3,i=2;
-x+=i;
+int x=3, i=2;
+x += i;
 while (x>i) { 
     int i=0;
     ...

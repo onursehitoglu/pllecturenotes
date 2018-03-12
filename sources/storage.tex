@@ -639,7 +639,8 @@ is unaccessible. (\texttt{*p} in examples)
 \begin{frame}
  \frametitle{Garbage collection}
  \begin{itemize}
-  \item A solution to dangling reference and garbage problem: PL does management of heap variable deallocation automatically. This is called \structure{garbage collection}. (Java, Lisp, ML, Haskell, most functional languages)
+  \item A solution to dangling reference and garbage problem: \\
+	PL does management of heap variable deallocation automatically. This is called \structure{garbage collection}. (Java, Lisp, ML, Haskell, most functional languages)
   \item no call like \texttt{free()} or \texttt{delete} exists.
   \item Language runtime needs to:
 	\begin{itemize}
@@ -656,7 +657,8 @@ is unaccessible. (\texttt{*p} in examples)
 \begin{frame}
  \begin{itemize}
   \item Garbage collector deallocates heap variables having a reference count 0.
-  \item It usually works in a separate thread, in low priority, works when CPU is idle.
+  \item Since it may delay execution of tasks, GC is not immediately done.
+  \item GC usually works in a separate thread, in low priority, works when CPU is idle.
   \item Another but too restrictive solution to garbage: Reference cannot be assigned to a longer lifetime variable.
 	local variable references cannot be assigned to global reference/pointer.
  \end{itemize}

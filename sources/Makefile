@@ -10,8 +10,8 @@ slides = $(pdfs:%=ceng242-sl-%)
 all: $(slides) $(handouts)
 
 install: all
-	cp $(slides) ../slides/ ;\
-	cp $(handouts) ../handouts/
+	rsync -av $(slides) ../slides/ ;\
+	rsync -av $(handouts) ../handouts/
 
 ceng242-%.pdf : %.tex
 	-pdflatex -jobname=$(@:%.pdf=%) '\documentclass[handout,compress,xcolor=table]{beamer}\input{$<}' && \
