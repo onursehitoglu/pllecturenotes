@@ -119,31 +119,98 @@ hiding the details, and defining a mechanism to access it.
 \end{frame}
 
 \subsection{Selector Abstraction}
-\defverbatim[colored]\codeselectCpp{
-\begin{lstlisting}[language={C++},escapechar=\#]
-int & get(List *p, int el) {   /* linked list */
-    int i;
-    for (i=1;i<el;i++) {
-	p = p->next;       /* take the next element */
-    }
-    return p->data;
-}
-get(head,i) = get(head,2) + 1; ...
-\end{lstlisting}}
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Selector abstraction}
 \begin{itemize}[<+->]
  \item arrays: \texttt{ int a[10][20];  a[i]=a[i]+1;}
  \item \texttt{ [..] } operator selects elements of an array.
  \item User defined selectors on user defined structures?
  \item Example: Selector on a linked list:
-\begin{beamercolorbox}{cexample}
- \codeselectCpp
+\begin{beamercolorbox}{cexample}\noindent
+\begin{lstlisting}[language={C++},escapechar=\#]
+struct List {
+  int data;
+  List *next;
+  int & operator[](int el) {
+    int i; List *p = this;
+    for (i = 1 ; i < el ; i++) 
+      p = p->next;       /* take the next element */
+    return p->data;
+  };
+  ...
+};
+List h;
+...
+h[1] = h[2] + 1;
+\end{lstlisting}
 \end{beamercolorbox}
 \item C++ allows overloading of \texttt{[]} operator for classes.
 \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+\begin{itemize}
+\item {\small Python \lstinline[language=Python]{__setitem__(k,v)} implements l-value,
+\lstinline[language=Python]{__getitem__(k)} r-value selector.}
+\end{itemize}
+\begin{beamercolorbox}{pexample}\noindent
+\begin{lstlisting}
+class BSTree:
+  def __init__(self):
+    self.node = None
+  def __getitem__(self, key):
+    if self.node == None:
+        raise KeyError
+    elif key < self.node[0]: return self.left[key]
+    elif key > self.node[0]: return self.right[key]
+    else:                    return self.node[1]
+  def __setitem__(self, key, val):
+    if self.node == None:
+        self.node = (key,val)
+        self.left = BSTree()    # empty tree
+        self.right = BSTree()   # empty tree
+    elif key < self.node[0]: self.left[key] = val
+    elif key > self.node[0]: self.right[key] = val
+    else:                    self.node = (key,val)
+
+a = BSTree()
+a["hello"] = 4
+a["world"] = a["hello"] + 5
+\end{lstlisting}
+\end{beamercolorbox}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{beamercolorbox}{cexample}
+\begin{lstlisting}[language=C++]
+class BST {
+    struct Node { string key; double val; 
+                  Node *left, *right;} *node;
+public:
+    BST() { node = NULL;};
+    double & operator[](const string &k) {
+        Node **parent = NULL, *p = node, *newnode;
+        while (p != NULL) {
+            if (k < p->key) {
+                parent = &p->left; p = p->left;
+            } else if (k > p->key) {
+                parent = &p->right; p = p->right;
+            } else return p->val;
+        }
+        newnode = new Node;
+        newnode->left = newnode->right = NULL;
+        newnode->key = k; 
+        if (parent == NULL) node = newnode;
+        else                *parent = newnode;
+        return newnode->val;
+   }
+};
+BST a;
+a["carrot"] = 3; a["onion"] = 4;
+a["patato"] = a["onion"] + 2;
+\end{lstlisting}
+\end{beamercolorbox}
+\end{frame}
 
 \defverbatim[colored]\codetemplateCpp{
 \begin{lstlisting}[language={C++},escapechar=\#]
@@ -228,12 +295,70 @@ for v in v.inorder():
 \begin{frame}
 \frametitle{Iterator abstraction}
 \begin{itemize}
-\item Iteration over a user defined data structure. \structure{Python} example:
+\item Iteration over a user defined data structure. \structure{Python} generator example:
 \begin{beamercolorbox}{oexample}
  \codeiteratorabsPython
 \end{beamercolorbox}
 \end{itemize}
 \end{frame}
+
+\begin{frame}[fragile]
+\frametitle{C++ iterators}
+\begin{itemize}
+\item C++ Standard Template Library containers support \structure{iterators}
+\item \lstinline!begin()! and \lstinline!end()! methods return iterators to start and end of the data structure
+\item Iterators can be dereferenced as \lstinline!*iter! or \lstinline!iter->member!.
+\item `\lstinline!++!' operation on an iterator skips to the next value.
+\item \begin{lstlisting}[language=C++,escapeinside=`']
+for (`\em ittype\/' it = a.begin(); it != a.end(); ++it) {
+    // use *it or it->member it->method() in body
+}
+\end{lstlisting}
+\item C++11 added:
+\begin{lstlisting}[language=C++,escapeinside=`']
+for (`\em valtype\/' & i : a ) {
+    // use directly i as l-value or r-value. 
+}
+\end{lstlisting}
+This syntax is equivalent to:
+\begin{lstlisting}[language=C++,escapeinside=`']
+for (`\em ittype\/' it = a.begin() ; it != a.end(); it++) {
+    `\em valtype\/' & i = it;
+    // use directly i as l-value or r-value 
+}
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{C++ iterators}
+\begin{beamercolorbox}{cexample}
+\begin{lstlisting}[language=C++]
+template<class T> class List {
+  struct Node { T val; Node *next;} *list;
+public: List() { list = nullptr;}
+  void insert(const T& v) { Node *newnode = new Node;
+      newnode->next =list; newnode->val = v; list = newnode;}
+  class Iterator {
+    Node *pos;
+  public: Iterator(Node *p) { pos = p;}
+    T & operator*() { return pos->val; }
+    void operator++() { pos = pos->next; }
+    bool operator!=(const Iterator &it) { return pos != it.pos; }
+  };
+  Iterator begin() { Iterator it = Iterator(list); return it; }
+  Iterator end() { Iterator it = Iterator(nullptr); return it; }
+};
+...
+List<int> a;
+// C++11 syntax below
+for (int & i : a ) {  i *= 2; cout << i << '\n'; }
+for (const char * s : { "ankara","istanbul","izmir" }) { 
+    cout << s ; }
+\end{lstlisting}
+\end{beamercolorbox}
+\end{frame}
+
 
 \section{Abstraction Principle}
 \begin{frame}
