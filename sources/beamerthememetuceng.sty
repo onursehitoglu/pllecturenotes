@@ -18,6 +18,19 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning}
 
+%% define metu logo
+\tikzset{pics/metulogo/.style args={#1}{code={
+\path (#1,#1) node (cA) {};
+\path (1.3819660112501051*#1,#1) node (cB) {}; 
+\path [line width=#1/40,draw=white,fill=white] (cA) circle [radius=#1*1.025];
+\path [line width=#1/40,draw=white,fill=white] (cB) circle [radius=#1*1.025];
+\path [line width=#1/40,draw,fill] (cA) circle [radius=#1];
+\path [line width=#1/40,draw,fill=white] (cB) circle [radius=#1];
+\draw [fill] (#1*1.19098300562505238,0.01840665672467956*#1) arc [radius=#1,start angle=-78.9898431656865, end angle=78.9898431656865];
+\draw [fill=white] (#1*1.19098300562505238,1.9815933432753204*#1) arc [radius=#1,start angle=180-78.9898431656865, end angle=180+78.9898431656865];
+}}}
+
+
 %% Custom colors
 %\setbeamerfont{block title}{size={}}
 \definecolor{metustructurecolor}{RGB}{10,70,150}
@@ -55,9 +68,8 @@
 	\begin{beamercolorbox}[ht=2.5ex,dp=1.125ex,%
 	leftskip=.3cm,rightskip=.3cm plus1fil]{footline}
 	\hspace*{5pt}%
-	\raisebox{-.26\height}{\includegraphics[height=1.2em]{metu-official-logo}}
-	{\metufont \color{metugray} METU \hspace*{1em}
-	 Computer Engineering} \hspace*{3em} \insertshorttitle\hspace{1pt}/\hspace{1pt}\insertshortsubtitle \hfill \insertframenumber\hspace{1pt}/\hspace{1pt}\inserttotalframenumber\hspace*{4ex}
+	\raisebox{-.26\height}{\tikz[metucolor]\pic{metulogo={1.3mm}};}  %\includegraphics[height=1.2em]{metu-official-logo}}
+	{\metufont METU Computer Engineering} \hspace*{3em} \insertshorttitle\hspace{1pt}/\hspace{1pt}\insertshortsubtitle \hfill \insertframenumber\hspace{1pt}/\hspace{1pt}\inserttotalframenumber\hspace*{4ex}
   \end{beamercolorbox}
   \vskip0pt%
 }

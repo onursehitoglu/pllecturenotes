@@ -6,6 +6,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows,positioning,calc,shadows,matrix,fit}
+\usepackage[graph,arrow,curve,color]{xy}
 \usepackage{listings}
 \usepackage{multicol}
 %\includeonlyframes{current}
@@ -323,7 +324,7 @@ for (`\em valtype\/' & i : a ) {
 This syntax is equivalent to:
 \begin{lstlisting}[language=C++,escapeinside=`']
 for (`\em ittype\/' it = a.begin() ; it != a.end(); it++) {
-    `\em valtype\/' & i = it;
+    `\em valtype\/' & i = *it;
     // use directly i as l-value or r-value 
 }
 \end{lstlisting}
@@ -495,6 +496,7 @@ int main() {
 
 \subsection{Binding Mechanisms}
 \begin{frame}
+\frametitle{Binding Mechanisms}
  \begin{itemize}
   \item  Based on binding of the formal parameter variable/identifier to actual parameter
 value/identifier.
@@ -584,6 +586,29 @@ the same result.}
 \end{frame}
 
 \begin{frame}
+In $\lambda$-calculus, all orders reduce the same normal form.\\
+\tiny
+\xygraph{[]!{<14mm,0mm>:<0mm,8mm>::}
+{\lambda x.(\lambda y.y+(\lambda x.x+1~y)~~(x+2))~~5}
+ ( :@{|->}[dll] {\lambda y.y+(\lambda x.x+1~~y)~~(5+2)}
+    ( :@{|->}[dl] {5+2+(\lambda x.x+1~~(5+2))}
+        ( :@{|->}[ddddrrr] {5+2+5+2+1}="bot" ) ,
+      :@{|->}@(dr,ur)[dddl] {\lambda y.y+y+1~~(5+2)} :@{|->}"bot"
+    ),
+   :@{|->}[dd]  {\lambda x.x+2+(\lambda x.x+1~~(x+2))~5}
+    (
+    :@{|->}[dl]  {5+2+(\lambda x.x+1~~(5+2))} :@{|->}"bot",
+    :@{|->}[dr]  {\lambda x.x+2+x+2+1~~5} :@{|->}"bot"
+    ),
+   :@{|->}[drr] {\lambda x.(\lambda y.y+y+1~~(x+2))~~5} (
+       :@{|->}[ddr] {\lambda y.y+y+1~~(5+2)} :@{|->}@(dr,r)"bot",
+       :@{|->}[ddd] {\lambda x.x+2+x+2+1~~5} :@{|->}"bot")
+ )
+}
+\end{frame}
+
+
+\begin{frame}
 \begin{itemize}
 \item Haskell implements \structure{Lazy Evaluation } order.
 \item Eager evaluation is faster than normal order evaluation but violates Church-Rosser
@@ -599,6 +624,54 @@ evaluates the formal parameter value other evaluations use previously found valu
 	$\mapsto$ x:43+1849 $\mapsto$ 1892}\hfill \structure{\small\rm (7 steps)}
 	
 
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Lazy Evaluation}
+\small
+\begin{itemize}
+\item Parameters are passed by name but compiler keeps evaluation state of them. Parameter value is store once it is evaluated. Further evaluations use that.
+\item Python implementation. First delay evaluation of expressions. Convert to functions:\\
+\lstinline!exp! $\rightarrow$ \lstinline[language=Python]!lambda : exp! \\
+$\eta$ expansion. Function version is also called \structure{thunk}.
+\item Inside function, call these functions to evaluate the expression.
+\begin{beamercolorbox}{pexample}
+\begin{lstlisting}[language=Python,basicstyle=\tiny\tt]
+def E(thunk):
+  if not hasattr(thunk,"stored"):
+    thunk.stored = thunk()      # evaluate and store
+  return thunk.stored           # use stored value
+
+def f(x,y):
+  if E(x) < 10:                # call E() on all evaluations
+    return E(x)*E(x)+E(y)
+  else:
+    return E(x)*E(x)+E(x)
+
+f(lambda : 3*32+4, lambda: 4/0)     # call by converting to function
+\end{lstlisting}
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
+\section{Infinite Values}
+\begin{frame}[fragile]
+\frametitle{Infinite Values}
+\begin{itemize}
+\item Delayed evaluation in normal order or lazy evaluation enables working on infinite values:
+\begin{beamercolorbox}{hexample}
+\begin{lstlisting}[language=Python]
+take _ [] = []
+take n (a:r) | n == 0 = []
+             | otherwise = a : take (n-1) r
+x = (1:2:x)
+\end{lstlisting}
+\texttt{\scriptsize take 3 x $\mapsto$ take 3 (1:2:x) $\mapsto$ 1:take (3-1) (2:x) $\mapsto$ \\
+1:2:take (2-1) x $\mapsto$ 1:2:take 1 (1:2:x) $\mapsto$ 1:2:1:take (1-1) (2:x)
+$\mapsto$ 1:2:1:[]}
+\end{beamercolorbox}
+\item Programmers can take advantage of this. Construct an infitely value, take as many as program needs. For example expand $\pi$ in an infinite value, stop when desired resolution achieved.
 \end{itemize}
 \end{frame}
 
