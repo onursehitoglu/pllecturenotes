@@ -307,10 +307,80 @@ men.get(); vehicles.get();
  \item re-usable codes.
 \end{itemize}
 \end{block}
+\frametitle{\ }
 \end{frame}
 
-\begin{frame}
-\frametitle{Further Re-usability}
+\section{Closure}
+\begin{frame}[fragile]
+\frametitle{Closure}
+\small
+\begin{itemize}
+\item \structure{Closure} is an abstraction method using the saved environment state in a scope.
+\item When a function returns a local object or function as its result and 
+language keeps the environment state along with the returned value, 
+it becomes a \structure{closure}\\[1em]
+
+\begin{beamercolorbox}{pexample}
+\begin{lstlisting}[language=Python,basicstyle=\tiny\tt]
+def newid():
+    c = 0  # this is the hidden variable in the environment
+    def incget():
+        nonlocal c      #python 3, binds c above
+        c += 1
+        return c
+    return incget
+
+>>> a = newid()
+>>> b = newid()
+>>> a()
+1
+>>> b()
+1
+>>> b()
+2
+\end{lstlisting}
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\small
+\begin{itemize}
+\item Local variables of closures stay alive after call, as long as returned value is alive.
+\item \structure{closures} can be used for generating new functions as in higher order functions:\\[.5em]
+\begin{beamercolorbox}{pexample}
+\begin{lstlisting}[language=Python,basicstyle=\tiny\tt]
+def mult(a):
+    def nested(b):
+        return a*b
+    return nested    # a different behaviour for each a value
+twice = mult(2)
+tentimes = mult(10)
+a=twice(4)+tentimes(50)
+\end{lstlisting}
+\end{beamercolorbox}
+\item Also can be used for prototyping objects. Javascript example:\\[.5em]
+\begin{beamercolorbox}{pexample}
+\begin{lstlisting}[language=HTML,basicstyle=\tiny\tt]
+function counter() {
+    var c = 0       // this is jailed in local environment, hidden
+    var newobj = {}  // create a new empty object
+    newobj.incr = function () { c++; }
+    newobj.get = function () { return c;}
+    return newobj
+}
+a = counter()
+b = counter()
+a.incr()
+a.get()
+b.get()
+\end{lstlisting}
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Further Reusability}
 \begin{itemize}
 \item Class relations. Extending one class definition to create 
 more specific class definitions.
