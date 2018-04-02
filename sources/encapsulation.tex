@@ -380,6 +380,41 @@ b.get()
 \end{frame}
 
 \begin{frame}[fragile]
+\frametitle{C++ 2011 Closures}
+\scriptsize
+\begin{itemize}
+\item C++ 2011 implements closures in lambda expressions by adding a set of captured variables within \lstinline![]!. This copy or get reference of auto variables in the environment in an object.
+\item However C++ closures do not extend lifetime of captured variables. After exit, the behaviour is undetermined. 
+\item \lstinline![a,&b] (int x) { return a+x+b;}! captures \lstinline!a! and \lstinline!b! from current environment, \lstinline!a! is by copy, \lstinline!b! by reference.\\[.5em]
+\begin{beamercolorbox}{cexample}
+\begin{lstlisting}[language=C++, basicstyle=\tiny\tt]
+std::function<int(int)>  multiply(int a) {
+    return [&] (int b) { return a*b;}; // capture by value
+};
+std::function<int()> cid() {
+    int c = 0;
+    return [=] () mutable { return ++c; }; // capture by copy
+};
+int main() {
+    std::function<int(int)> twice = multiply(2);
+    std::function<int(int)> three = multiply(3);
+
+    cout << twice(12) << ' ' << three(34) << endl;
+
+    auto c1 = cid();
+    auto c2 = cid();
+
+    cout << c1() << ' ' << c2() << endl;
+    c1(); c1(); c1();
+    cout << c1() << ' ' << c2() << endl;
+    return 0;
+}
+\end{lstlisting}
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
 \frametitle{Further Reusability}
 \begin{itemize}
 \item Class relations. Extending one class definition to create 
