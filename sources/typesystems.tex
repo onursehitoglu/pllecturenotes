@@ -5,7 +5,7 @@
 %\usepackage{pstricks,pst-node} % PSTricks package
 %\usepackage[turkish]{babel}
 \usepackage{tikz}
-\usetikzlibrary{positioning,shapes,fit,arrows}
+\usetikzlibrary{positioning,shapes,fit,arrows,graphs,shadows}
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
 \usepackage{multicol}
@@ -175,7 +175,7 @@ Main> move d 4 5
 (h = 5, w = 10, x = 4, y = 5)
 \end{lstlisting}}
 \begin{frame}
-Haskell extensible records:
+Haskell extensible records (only works for Hugs and in 98 mode!!):
 \begin{beamercolorbox}{hexample}
 \codehaskinh
 \end{beamercolorbox}
@@ -218,10 +218,58 @@ defined
 \end{itemize}
 \end{frame}
 
-\subsection{Haskell Class Hieararchy}
-\begin{frame}
-\frametitle{Haskell Class Hieararchy}
-\includegraphics[height=0.7\textheight]{haskell-class-tree}
+\begin{frame}[fragile]
+\frametitle{Haskell Default Class Hieararchy}
+\scriptsize
+\begin{columns}
+\begin{column}{.56\textwidth}
+\begin{tikzpicture}
+ \graph [grow up, branch right=6em, full/.style={rectangle,draw, fill=blue!20!white,
+         rounded corners=2pt, drop shadow={shadow xshift=1pt, shadow yshift=-1pt}},
+         edges={thick}]
+        { dummy2 [as={}] -!- Integral [full] -> Enum  [full] -!- Show [full] -!- Read [full];
+          RealFloat [full] -> RealFrac [full] -> Real [full] -> Ord [full] -> Eq [full];
+          dummy [as={}] -!- Floating [full] -> Fractional [full]  -> Num [full];
+          Bounded [full] -!- Functor [full] -!- Monad [full] -!- Foldable [full];
+          Num <- Real;
+          RealFrac -> Fractional;
+          RealFloat -> Floating;
+          Real <- Integral;
+        };
+\end{tikzpicture}
+\end{column}
+\begin{column}{.44\textwidth}
+\begin{beamercolorbox}{hexample}
+\begin{lstlisting}[language=Haskell,basicstyle=\tiny\tt]
+Eq :  (==),(/=)
+
+Ord: (<=), compare
+
+Num: (+), (-), (*), negate, abs, 
+     signum, fromInteger
+
+Real: toRational
+
+Fractional: (/), recip, fromRational
+
+RealFrac: truncate, round, ceiling,..
+
+Enum: succ, pred, toEnum fromEnum,...
+
+Integral: quot, rem, div, mod,
+   toInteger, divMod, quotRem
+
+Floating: pi, exp, log, sin, (**),
+          cos, asin, sinh, ...
+
+RealFloat: floatRadix, exponent, 
+  isNaN, isIEEE, decodeFloat,...
+
+Show: show
+\end{lstlisting}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
 \end{frame}
 
 \defverbatim[colored]\codehaskclass{
@@ -448,6 +496,41 @@ f::([\alpha] \rightarrow \beta)$
 $\alpha$)
 \item Type inference finds the \structure{most general type} satisfying the
 constraints.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Inferring Type from Initializers}
+\begin{itemize}
+\item C++11 \lstinline{auto} type specifier gets type from initializer or return expression.
+\item C++11 \lstinline{decltype(varexp)} gets type same as the variables declared type\\[.5em]
+\begin{beamercolorbox}{cexample}
+\begin{lstlisting}[language=C++]
+auto f(int a) {  
+   return a/3.0;  // double, function becomes double
+}  
+struct P { double x, y;} *pptr;
+
+decltype(pptr->x) xval; // double since pptr->x is double
+
+auto v = (P)({ 2.0, 4.0}); // initializer is P typed
+auto t = f(3);    // f(3) returns double so t is double
+\end{lstlisting}
+\end{beamercolorbox}
+\item GCC has \lstinline!typeof(expr)!, some other dialects have \lstinline!__typeof__(expr)! macro having a similar mechanism in C.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Summary}
+\begin{itemize}
+\item Monomorphic vs Polymorphic types
+\item Subtyping
+\item Inheritence
+\item Overloading
+\item Parametric polymorphism
+\item Coercion
+\item Type Inference
 \end{itemize}
 \end{frame}
 \end{document}
