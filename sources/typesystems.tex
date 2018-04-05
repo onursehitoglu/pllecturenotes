@@ -336,7 +336,36 @@ $(int \rightarrow Bool) \rightarrow [int] \rightarrow [int]$ \\
 \item Operations are same, types are different.
 \item Types with type variables: \structure{polytypes}
 \item Most functional languages are polymorphic
-\item Object oriented languages provide polymorphism through inheritance
+\item Object oriented languages provide polymorphism through inheritance,
+    run time binding and generics
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Polymorphism in C++ and Java}
+\begin{itemize}
+\item Inheritence provides subtyping polymorphism
+\item C++ \lstinline!virtual! methods, and all methods in Java implements \structure{late binding}
+   to improve polymorphism  through inheritence.
+\item Generic abstractions, C++ \structure{templates} and Java \structure{generics} provide 
+polymorphic classes and functions.
+\begin{beamercolorbox}{cexample}
+\begin{lstlisting}[language=C++]
+template <typename T>
+void sort(T arr[], int n) {
+    // ... your favorite sort algorithm here
+}
+\end{lstlisting}
+\end{beamercolorbox}
+\begin{beamercolorbox}{cexample}
+\begin{lstlisting}[language=Java]
+class Test { //Java requires functions be in a class
+void <T> sort(T[] arr) {
+    // ... your favorite sort algorithm here
+}
+\end{lstlisting}
+\end{beamercolorbox}
+\item C++ \structure{templates} use compile time binding. Java \structure{generics} binds at run time.
 \end{itemize}
 \end{frame}
 

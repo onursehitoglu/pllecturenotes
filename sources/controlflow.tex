@@ -126,9 +126,10 @@ L2:     ....
     }
 \end{lstlisting}}
 \begin{frame}
+\small
 \begin{itemize}
 \item Unrestricted jumps $\Rightarrow$ spaghetti coding.
-\item Dream of a PL where labels are first order values. \smiley
+\item GCC extension allows storing labels in variables. Would you like to debug that code? \smiley
 \item Further problems. Which jumps have problems?:
 \begin{beamercolorbox}{cexample}
 \codejumpblock
@@ -212,10 +213,35 @@ program.
 \begin{frame}
 \begin{itemize}
 \item Jump out  of a function block, jump inside of a function block
-\item Activation record, run-time stack? Possible only for one direction
-	if stack position can be recovered.
-\item \structure{Non-local jumps}
-\item unexpected error occuring inside of many levels of recursion. Jump to
+\item Jumps update current instruction pointer. But what about environment, activation record 
+    (run-time stack)? 
+\item Possible only for one direction if stack position can be recovered. Called \structure{non-local jumps}\\
+{\tiny \begin{tikzpicture}
+   [stack/.style={rectangle split, rectangle split parts=4,draw,
+     text width=7em},
+    scolor/.style={rectangle split part fill={white,blue!20!white,blue!20!white,blue!20!white}}]
+
+\node [stack,scolor] (stk1) {
+\nodepart{one} \rule{0pt}{3em}
+\nodepart{two} record of f()
+\nodepart{three} record of g()
+\nodepart{four} record of main()
+};
+\node [stack,scolor,rectangle split parts=3, right=5em of stk1] (stk2) {
+\nodepart{one} \rule{0pt}{4.7em}
+\nodepart{two} record of g()
+\nodepart{three} record of main()
+};
+\node [stack,scolor, rectangle split parts=3,right=5em of stk2] (stk3) {
+\nodepart{one} \rule{0pt}{4.7em}\hspace*{2em} ??
+\nodepart{two} record of g()
+\nodepart{three} record of main()
+};
+\draw [->,green,thick] (stk1.two east) -- +(1em,0) |- (stk2.two west);
+\draw [->,red,thick] (stk2.two east) -- +(1em,0) node [fill=white, yshift=.9em] {$\times$} |-  ($(stk3.one west) - (0,1.6em)$);
+\end{tikzpicture}
+}
+\item Are non-local jumps useful? One of the uses: unexpected error occuring inside of many levels of recursion. Jump to
 	the outer-most related caller function. \structure{Exceptions}
 \end{itemize}
 \end{frame}
@@ -297,7 +323,7 @@ int main() {  ...
 \begin{beamercolorbox}{cexample}
 \codeerrorexcep
 \end{beamercolorbox}
-\tikz [remember picture, overlay,blue] \draw [->] (ee1) -- (4,0) |- (ee4);
+\tikz [remember picture, overlay,blue] \draw [->,thick] (ee1) -- +(4,0) |- (ee4);
 \end{itemize}
 \end{frame}
 
@@ -306,7 +332,7 @@ int main() {  ...
 int main() {... try { C1;  f#\R{tf}{}#() ; C2 } catch (double#\R{cdoub}{}# a) {...}}
 
 
-void f#\R{ff}{}#() {...; try {...; g#\R{tg}{}#() ; ... } catch (int#\R{cint}{}# a) { ...} }
+void f#\R{ff}{}#() {...; try {...; g#\R{tg}{}#() ; ... } catch (int#\R{cint}{}# a) {...} }
 
 
 void g#\R{fg}{}#() {...; throw 4#\R{tint}{}#; ... ; throw 1.5#\R{tdoub}{}#; ...}
@@ -325,5 +351,15 @@ Nested exceptions are handled based on types. C++:
 
 \noindent
 In case no handlers found a run time error generated. Program halts.
+\end{frame}
+
+\section{Co-routines}
+\begin{frame}[fragile]
+\frametitle{Co-routines}
+\begin{itemize}
+\item Sequential flow: local jumps, subroutine calls, exceptions
+\item Concurrent flow: multiple contexes (stack and instruction pointer). Execution switches between them.
+\item Multiple uses: \structure{callbacks}, \structure{generators} (iterators), \structure{threads}, \structure{fibers}, \structure{asynchronous} or \structure{concurrent} programming
+\end{itemize}
 \end{frame}
 \end{document}
