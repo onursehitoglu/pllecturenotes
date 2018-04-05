@@ -359,7 +359,36 @@ In case no handlers found a run time error generated. Program halts.
 \begin{itemize}
 \item Sequential flow: local jumps, subroutine calls, exceptions
 \item Concurrent flow: multiple contexes (stack and instruction pointer). Execution switches between them.
-\item Multiple uses: \structure{callbacks}, \structure{generators} (iterators), \structure{threads}, \structure{fibers}, \structure{asynchronous} or \structure{concurrent} programming
+\item Multiple uses: \structure{callbacks}, \structure{generators} (iterators), \structure{threads}, \structure{fibers}, \structure{asynchronous}, \structure{event based}, or 
+\structure{concurrent} programming\\
+\item Non-local jumps to different environments guided coordinated programs or a global scheduling mechanism:\\
+{\tiny \begin{tikzpicture}
+   [stack/.style={rectangle split, rectangle split parts=4,draw,
+     text width=10em},
+    scolor/.style={rectangle split part fill={white,blue!20!white,blue!20!white,blue!20!white}}]
+
+\node [stack,scolor,rectangle split parts=3] (stk2) {
+\nodepart{one} \rule{0pt}{4.7em}
+\nodepart{two} record of g()
+\nodepart{three} record of main()
+};
+\node [stack,scolor,right=5em of stk2] (stk1) {
+\nodepart{one} \rule{0pt}{3em}
+\nodepart{two} record of free()
+\nodepart{three} record of traverse()
+\nodepart{four} record of gc()
+};
+\node [stack,scolor, rectangle split parts=3,right=5em of stk1] (stk3) {
+\nodepart{one} \rule{0pt}{4.7em}\hspace*{2em}
+\nodepart{two} record of mouseevent()
+\nodepart{three} record of listener()
+};
+\draw [->,blue!40!black,thick] (stk2.two east) -- +(1em,0) node [xshift=2em, yshift=.9em] {\fontsize{2}{2}\selectfont sched()} |- (stk1.two west);
+\draw [->,blue!40!black,thick] (stk1.two east) -- +(1em,0) node [xshift=2em, yshift=-.9em] {\fontsize{2}{2}\selectfont sched()} |-  (stk3.two west);
+\draw [->,blue!40!black,thick] (stk3.two east) -- +(2em,0) -- +(2em,-4em)  node [xshift=-20em, yshift=.5em] {\fontsize{2}{2}\selectfont sched()} -| ($(stk2.two west)+(-2em,0)$) --  (stk2.two west);
+\end{tikzpicture}
+}
+
 \end{itemize}
 \end{frame}
 \end{document}
