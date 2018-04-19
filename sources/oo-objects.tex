@@ -252,8 +252,31 @@ public:
 \end{itemize}
 \end{frame}
 
+\subsection{Constructor Calls}
+\begin{frame}
+\frametitle{Constructor Calls}
+\begin{itemize}
+\item Calling a constructor as a member function is not allowed:\\
+\lstinline!Person p ; p.Person("john");! is a compiler error
+\item Constructor \structure{definitions} can call eachother with specific syntax:\\
+\lstinline!Person():Person("john doe") \{ ... \}!
+\item Explicit constructor calls create a \structure{temporary object}:\\
+\lstinline!Person p; p = Person("john");! is equivalent to:\\
+\lstinline!Person p; \{ Person tmp("john"); p = tmp; \} !\\
+note that lifetime of \lstinline!tmp! is over at the end of line
+\item In definitions, no intermediate object created:\\
+\lstinline!Person p =  Person("john");! 
+\item A constructor also works as a type convertion operator:\\
+\lstinline!p = (Person) "john";! is equivalent to \lstinline!p = Person("john")!, creates a
+temporary object
+\item Also type conversion works implicitly. C++ calls constructors when type conversion is required:\\
+\lstinline!p = "john";! is equivalent to the call above.
+\end{itemize}
+\end{frame}
+
 \subsection{Copy Constructor}
 \begin{frame}
+\frametitle{Copy Constructor}
 \begin{itemize}[<+->]
 \item Destructor does not solve all problems with objects with heap members:
 \begin{itemize}
@@ -334,9 +357,10 @@ the end of the line (at `\texttt{;}'), destructors are called regularly.
 \item Explicit call to a constructor also creates such a temporary
 object.\\
 	\lstinline!g=Person("ali","veli");!
-\item C++ optimizer avoids copy constructor calls when
-possible.\\
-\lstinline!List f() \{ List t;...; return t;\} ... ; d=f(); ...!
+\item C++ compilers avoid copy constructor calls when
+possible, called \structure{copy elision}.\\
+\lstinline!List f() \{ List t;...; return t;\} ... ; d=f(); ...!\\
+If possible, compiler binds local object and returned temporary object same storage $\rightarrow$ No constructor call.
 \end{itemize}
 \end{frame}
 
