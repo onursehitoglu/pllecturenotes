@@ -258,8 +258,8 @@ public:
 \begin{itemize}
 \item Calling a constructor as a member function is not allowed:\\
 \lstinline!Person p ; p.Person("john");! is a compiler error
-\item Constructor \structure{definitions} can call eachother with specific syntax:\\
-\lstinline!Person():Person("john doe") \{ ... \}!
+\item Constructor \structure{definitions} can call eachother with special syntax:\\
+\lstinline!Person():Person("john doe") \{ ... \}! (C++11 only)
 \item Explicit constructor calls create a \structure{temporary object}:\\
 \lstinline!Person p; p = Person("john");! is equivalent to:\\
 \lstinline!Person p; \{ Person tmp("john"); p = tmp; \} !\\
@@ -274,6 +274,43 @@ temporary object
 \end{itemize}
 \end{frame}
 
+\subsection{\texttt{const} Keyword}
+\begin{frame}
+\frametitle{\texttt{const} Keyword}
+\begin{itemize}
+\item C++ does strict type checking on constant restriction on \lstinline!const! 
+\item \lstinline!const char *p! vs \lstinline!char *const q!\\
+\begin{enumerate}
+      \item \lstinline!p[3]='a';! \only<2->{{\NO}}
+      \item \lstinline!q[3]='a';! \only<2->{{\OK}}
+      \item \lstinline!p++;! \only<2->{{\OK}}
+      \item \lstinline!q++;! \only<2->{{\NO}}
+\end{enumerate}
+\item \lstinline!const char * const p!
+\item \lstinline!f(const ClassName &a)! makes the parameter object constant during the
+	function scope
+\item \lstinline!const ClassName &f()! makes the returned object reference constant
+	in expression containing the function call
+\item What's beside assignment? \structure{constant member functions}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Constant Member Functions}
+\begin{itemize}[<+->]
+\item \lstinline!void f(const Rational &a) \{ ...; a.clear(3);...;a.out();\}!\\
+      \lstinline!void Rational::clear() \{ a=b=0;\}!\\
+	What is wrong above?
+\item \lstinline!void Rational::out() const \{...; a=b=0; \}!\\
+	\texttt{const} keyword preceding the function body makes member function a constant
+	function.
+\item Constant functions cannot update member variables, only can inspect them\\
+	\alert{\texttt{a=b=0} in \texttt{out()} is invalid above}
+\item If an object is constant, only constant member functions can be called.\\
+	\alert{\texttt{a.clear(3);} is invalid above}
+\item Type system of C++ prohibits those $\rightarrow$ Syntax error.
+\end{itemize}
+\end{frame}
 \subsection{Copy Constructor}
 \begin{frame}
 \frametitle{Copy Constructor}
@@ -364,42 +401,121 @@ If possible, compiler binds local object and returned temporary object same stor
 \end{itemize}
 \end{frame}
 
-\section{\texttt{const} Keyword}
+\subsection{Pass by reference}
 \begin{frame}
-\frametitle{\texttt{const} Keyword}
+\small
+\frametitle{Pass by reference}
 \begin{itemize}
-\item C++ does strict type checking on constant restriction on \lstinline!const! 
-\item \lstinline!const char *p! vs \lstinline!char *const q!\\
-\begin{enumerate}
-      \item \lstinline!p[3]='a';! \only<2->{{\NO}}
-      \item \lstinline!q[3]='a';! \only<2->{{\OK}}
-      \item \lstinline!p++;! \only<2->{{\OK}}
-      \item \lstinline!q++;! \only<2->{{\NO}}
-\end{enumerate}
-\item \lstinline!const char * const p!
-\item \lstinline!f(const ClassName &a)! makes the parameter object constant during the
-	function scope
-\item \lstinline!const ClassName &f()! makes the returned object reference constant
-	in expression containing the function call
-\item What's beside assignment? \structure{constant member functions}
+\item \lstinline!Person &a! denotes a reference type and implements \structure{pass by reference}.
+ No new object is created for parameter. 
+\item Can be used in declaration to create an alias:\\
+\lstinline!Person & q = p;!  {\scriptsize (subject to lifetime of \lstinline!p!)} \\
+\lstinline!const Person &t = Person("john");! {\scriptsize (temporary read only object with a longer lifetime)}
+\item Returning reference type is also possible:\\
+\lstinline!int & Person::get() \{ ...\}!\\
+\lstinline!p.get()++;!\\
+\item \lstinline!const! references follow the semantics of \lstinline!const!.
+\item Temp. objects, \structure{r-values} cannot be passed by non-const references:\\
+\lstinline!void print(Person &p) \{ ...\}!\\
+\lstinline!print( (Person) "marry" );! is an error.
+\item \structure{r-values} can be passed by constant references:\\
+\lstinline!void print(const Person &p) \{ ...\}!\\
+\lstinline!print( (Person) "marry" );! is ok.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
-\frametitle{Constant Member Functions}
-\begin{itemize}[<+->]
-\item \lstinline!void f(const Rational &a) \{ ...; a.clear(3);...;a.out();\}!\\
-      \lstinline!void Rational::clear() \{ a=b=0;\}!\\
-	What is wrong above?
-\item \lstinline!void Rational::out() const \{...; a=b=0; \}!\\
-	\texttt{const} keyword preceding the function body makes member function a constant
-	function.
-\item Constant functions cannot update member variables, only can inspect them\\
-	\alert{\texttt{a=b=0} in \texttt{out()} is invalid above}
-\item If an object is constant, only constant member functions can be called.\\
-	\alert{\texttt{a.clear(3);} is invalid above}
-\item Type system of C++ prohibits those $\rightarrow$ Syntax error.
+\frametitle{Effiency of Parameter Passing}
+\begin{itemize}
+\item Pass by reference is efficient but modification of actual parameter is not always desired
+\item \lstinline!const! references avoid modification of actual parameters and may get \structure{r-values} however paremeter object cannot be modified.
+\item \structure{Copy constructor} and pass by value solves modifiable parameter object and r-value problem. 
+\item Copying is expensive and r-values, temporary objects have a very short lifetime. 
+\item One solution is stealing the resources of an object instead of copying. 
+\item An r-value has a short lifetime, so stealing its resources would not harm the integrity.
+\item C++11 defined \structure{rvalue references}, \structure{move constructor} and \structure{assignment move operator} to solve this problem.
 \end{itemize}
+\end{frame}
+
+\subsection{Move Constructor}
+\begin{frame}
+\frametitle{Move Constructor}
+\begin{itemize}
+\item C++11 introduced the following:
+\begin{enumerate}
+\item \structure{rvalue reference:} \lstinline!Person &&p!
+\item \structure{move constructor:} \lstinline!Person(Person &&p) { }!
+\item \structure{assignment move:} \lstinline!operator=(Person &&p) { }!
+\item \lstinline!T &&std::move(T &)!, a reference converter.
+\end{enumerate}
+\item \structure{rvalue references} are created for temporary objects and by making explicit \lstinline!std::move()! calls.
+\item \structure{move constructor} and all functions getting rvalue references (including assignment) gets resources directly from parameter object and leaves the paremeter in a valid but nullified state.
+\item move constructor does not allocate and copy values. Just get references and pointers. Therefore they are more efficient.
+\item After call, parameter will not contain its previous values but a minimum valid state.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{itemize}
+\item \structure{move constructor} is bound to return as a value cases (copy cons. called if it does not exist)
+\item Similarly passing temporary objects  to assignment or rvalue parameters will be more efficient.
+\item Programmers may convert lvalue references to rvalue references explicitly by calling \lstinline!std::move()! if the objec does not need its content afterwards.
+\item Move constructor is subject to \structure{copy elision}. Compiler avoids calling it if possible.
+\item Destructor is called for the moved rvalue when its lifetime is over. So it should be left 
+in a state without dangling references, double free problems etc.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{beamercolorbox}{cexample}
+\begin{lstlisting}
+class LList {
+    struct Node { int a; Node *next; } *head;
+public:
+    LList() { head = nullptr;}
+    LList(const LList &l) { // copy constructor
+        Node **prev = &head;
+        for (Node *p = l.head; p != nullptr; p = p->next) {
+            Node *q = new Node;
+            q->a = p-> a; (*prev) = q; prev = &(q->next);
+        }
+        *prev = nullptr;
+    }
+    LList(LList &&l) {  // move constructor
+        head = l.head; l.head = nullptr; // steal and nullify
+    }
+    ~LList() {  /* a decent llist destructor here */}
+};
+LList series(int n) { // assume no copy elision!
+    LList t;
+    for (int i = n; i >= 0 ; i--)
+        t.push(i);
+    return t;
+} 
+...
+series(10).out(); // picks MOVE (or none if copy elision)
+\end{lstlisting}
+\end{beamercolorbox}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{beamercolorbox}{cexample}
+\begin{lstlisting}
+LList LList::operator=(LList &&l) {   // move assignment
+    for (Node *p = head; p != nullptr;) { 
+        Node *q = p;         // deallocate current list
+        p = p->next; delete q;
+    }   
+    head = l.head; l.head = nullptr; // steal and nullify
+}
+
+...
+// first move constructor (if no elision) then assignment 
+// above is called. But it is the same linked list
+// which is local to series() is assigned to c
+c = series(10);  
+\end{lstlisting}
+\end{beamercolorbox}
 \end{frame}
 
 \section{Operator Overloading}
