@@ -9,7 +9,7 @@
 \usepackage{array}
 \usepackage{multicol}
 \usepackage{tikz}
-\usetikzlibrary{trees}
+\usetikzlibrary{trees,automata}
 %\includeonlyframes{current}
 
 \def\circtxt#1{$\mathalpha \bigcirc \mkern-13mu \mathtt #1$}
@@ -626,6 +626,14 @@ length([_|R], Res) :- length(R, RLen), Res is RLen + 1.
 \begin{frame}[fragile]
 \frametitle{Examples: List}
 \begin{itemize}
+\item Subset:\\
+\begin{beamercolorbox}{oexample}
+\begin{lstlisting}[escapeinside=`']
+subset([],[]).
+subset(Rsub,[_|R]) :- subset(Rsub,R).
+subset([H|Rsub],[H|R]) :- subset(Rsub,R).
+\end{lstlisting}
+\end{beamercolorbox}
 \item Permutations:\\
 \begin{beamercolorbox}{oexample}
 \begin{lstlisting}[escapeinside=`']
@@ -633,21 +641,9 @@ length([_|R], Res) :- length(R, RLen), Res is RLen + 1.
 perm([],[]).
 perm([H|R], HINS) :- perm(R,RP), insertall(H,RP,HINS).
 
-insertall(A,LST,[A|LST]).  % insert to beginning
+insert(A,LST,[A|LST]).  % insert to beginning
 % get first out and insertall positions, put first back
-insertall(A,[H|R],[H|RR]) :- insertall(A,R,RR). 
-\end{lstlisting}
-\end{beamercolorbox}
-\item Powerset:\\
-\begin{beamercolorbox}{oexample}
-\begin{lstlisting}[escapeinside=`']
-powerset([],[[]]).
-powerset([H|R], Res) :- powerset(R,PR), % w/o H
-                        allIns(H, PR, HPR), % with H
-                        append(PSR, HPR, Res).
-
-allIns(_,[],[]).
-allIns(V,[HL | R], [ [V|HL] | Res ]) :- allIns(V,R, Res).
+insert(A,[H|R],[H|RR]) :- insert(A,R,RR). 
 \end{lstlisting}
 \end{beamercolorbox}
 \end{itemize}
@@ -670,11 +666,9 @@ combin([H|R], [H|Res], N) :- N > 0, M is N-1,
 \begin{beamercolorbox}{oexample}
 \begin{lstlisting}[escapeinside=`']
 permut(_, [], 0). % 0 permutation is empty
-% all N permut of remain. is also in perm.
-permut([_|R], Res, N) :- N > 0, permut(R,Res,N).
-% N-1 permut of remain. add H in all positions
-permut([H|R], Res, N) :- N > 0, M is N-1, 
-        permut(R, MP, M), insertall(H, MP, Res).
+% for all elements H of L, permut remaind.
+permut(L, [H|RP], N) :- N > 0, M is N-1, 
+        insert(H,Rem,L), permut(Rem, RP, M).
 \end{lstlisting}
 \end{beamercolorbox}
 \end{itemize}
@@ -777,4 +771,57 @@ Number of solutions per cut will be:\\
 \only<2->{90, 6, 2, 1,\\ 54, 18, 6,\\ 90, 66, 60}
 \end{frame}
 
+\begin{frame}[fragile]
+\frametitle{Example: NDFA}
+\begin{columns}
+\begin{column}{.25\textwidth}
+\tiny
+\begin{tikzpicture} [node distance=1em]
+\node[state,initial] 	(S0) 	{$S_0$} ;
+\node[state,accepting] 			(S1) [above right=of S0]	{$S_1$} ;
+\node[state,accepting] 			(S2) [below right=of S0]	{$S_2$} ;
+\node[state] 			(S3) [right=of S1]	{$S_3$} ;
+\node[state] 			(S4) [right=of S2]	{$S_4$} ;
+\path[->]	(S0)	edge	node [above left]	{a}	(S1)
+				    edge 	node [below left]	{a}	(S2);
+\path[->]	(S1)	edge [bend left]	node [above]	{b}	(S3)
+					edge  	            node [left]	{$\epsilon$} (S2)
+					edge [loop above] 	node	{c}	();
+\path[->]	(S3)	edge [bend left]	node [below]	{a}	(S1)
+					edge [loop above] 	node	{c}	();
+\path[->]	(S2)	edge [bend left]	node [above]	{c}	(S4)
+					edge [loop below] 	node	{b}	();
+\path[->]	(S4)	edge [bend left]	node [below]	{a}	(S2)
+					edge  	            node [right]	{$\epsilon$} (S3)
+					edge [loop below] 	node	{b}	();
+\end{tikzpicture}
+\end{column}
+\begin{column}{.75\textwidth}
+\small
+\begin{itemize}
+\item Defined by a 5-tuple $(Q, \Sigma, \Delta , q_0, F)$:\\
+$Q$ set of states, $\Sigma$ input symbols,\\
+ $\Delta: Q \times \Sigma \rightarrow {\cal P}(Q)$
+set of transitions,\\
+$q_0 \in Q$ start state, $F \subseteq Q$ final states.
+\item In prolog, we can define all those relations:\\
+    \begin{enumerate}\scriptsize
+    \item define all transitions as \lstinline!trans(s0, a, s1)!.
+    \item define all empty transitions as \lstinline!empty(s1,s2)!.
+    \item define all accepting states as \lstinline!final(s1)!.
+    \item define starting state as \lstinline!start(s0)!.
+    \end{enumerate}
+\item NDFA parser using backtracking power of Prolog is easy:
+\end{itemize}
+\end{column}
+\end{columns}
+\begin{beamercolorbox}{oexample}
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
+parse(State, []) :- final(State).
+parse(State, [H|R]) :- trans(State, New, H), parse(State,R).
+parse(State, Inp) :- empty(State, New), parse(State,Inp).
+parse(Inp) :- start(S), parse(S, Inp).
+\end{lstlisting}
+\end{beamercolorbox}
+\end{frame}
 \end{document}
