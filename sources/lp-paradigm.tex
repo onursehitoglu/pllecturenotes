@@ -191,7 +191,7 @@ Term  & Atom & Num. & Var. & Struct. & not a term \\ \hline
 \lstinline!:->>!   &  \OK    &       &       &       	&	\\ \hline
 \lstinline!:-P!    &     &       &       &       	&\OK 	\\ \hline
 \lstinline!__!  &     &       &  \OK      &       	&	\\ \hline
-\lstinline!1e1!  &     &       &       &       	&\OK 	\\ \hline
+\lstinline!1e1!  &     &  \OK      &       &       	& 	\\ \hline
 \lstinline!1.0e1!  &     &   \OK     &       &       	&	\\ \hline
 \lstinline!0.2!  &     &  \OK      &       &       	&	\\ \hline
 \lstinline!.2!  &     &       &       &       	&\OK 	\\ \hline
@@ -626,6 +626,29 @@ length([_|R], Res) :- length(R, RLen), Res is RLen + 1.
 \begin{frame}[fragile]
 \frametitle{Examples: List}
 \begin{itemize}
+\item Relations may work different ways. Give all partitions of a list:\\
+\lstinline!append(P1, P2, [1,2,3])!. \\
+\lstinline[basicstyle=\tiny\ttfamily]!P1=[],P2=[1,2,3]; P1=[1],P2=[2,3]; P1=[1,2],P2=[3]; P1=[1,2,3],P2=[].!
+\item Selecting/removing element from a list1 results in list2:\\
+\begin{beamercolorbox}{oexample}
+\begin{lstlisting}
+select(E, [E|R],R).
+select(E, [H|R], [H|R2]) :- select(E, R, R2).
+\end{lstlisting}
+\end{beamercolorbox}
+\lstinline!select(3,[1,2,3], L)!\\
+\lstinline!L=[1,2]!\\
+\item For all elements of list1, give remaining list as well:\\
+\lstinline!select(A,[1,2,3], L)!\\
+\lstinline!A=1,L=[2,3]; A=2,L=[1,3]; A=3,L=[1,2]!
+\item Inserting element to all positions of list1 results in list2:\\
+\lstinline!select(a,[1,2,3], L)!\\
+\lstinline[basicstyle=\scriptsize\ttfamily]!L=[a,1,2,3]; L=[1,a,2,3]; L=[1,2,a,3]; L=[1,2,3,a]! 
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{itemize}
 \item Subset:\\
 \begin{beamercolorbox}{oexample}
 \begin{lstlisting}[escapeinside=`']
@@ -639,11 +662,9 @@ subset([H|Rsub],[H|R]) :- subset(Rsub,R).
 \begin{lstlisting}[escapeinside=`']
 % insert H to all positions in the remainder permutations
 perm([],[]).
-perm([H|R], HINS) :- perm(R,RP), insertall(H,RP,HINS).
-
-insert(A,LST,[A|LST]).  % insert to beginning
-% get first out and insertall positions, put first back
-insert(A,[H|R],[H|RR]) :- insert(A,R,RR). 
+% get first element H, get perms of rest
+% insert H in every position of rest perm
+perm([H|R], HINS) :- perm(R,RP), select(H, HINS, RP).
 \end{lstlisting}
 \end{beamercolorbox}
 \end{itemize}
@@ -666,9 +687,9 @@ combin([H|R], [H|Res], N) :- N > 0, M is N-1,
 \begin{beamercolorbox}{oexample}
 \begin{lstlisting}[escapeinside=`']
 permut(_, [], 0). % 0 permutation is empty
-% for all elements H of L, permut remaind.
+% for all elements H of L, permute remaining.
 permut(L, [H|RP], N) :- N > 0, M is N-1, 
-        insert(H,Rem,L), permut(Rem, RP, M).
+        select(H, L, Rem), permut(Rem, RP, M).
 \end{lstlisting}
 \end{beamercolorbox}
 \end{itemize}
@@ -682,7 +703,7 @@ permut(L, [H|RP], N) :- N > 0, M is N-1,
 \begin{lstlisting}[escapeinside=`']
 inter([],_,[]).
 inter([H|R],S, [H|Res] ) :- member(H,S), inter(R,S,Res).
-inter([H|R],S, Res ) :- \+(member(H,S)), inter(R,S,Res).
+inter([H|R],S, Res ) :- not(member(H,S)), inter(R,S,Res).
 \end{lstlisting}
 \end{beamercolorbox}
 \item Set union:\\
@@ -690,7 +711,7 @@ inter([H|R],S, Res ) :- \+(member(H,S)), inter(R,S,Res).
 \begin{lstlisting}[escapeinside=`']
 union([],S,S).
 union([H|R],S, Res ) :- member(H,S), union(R,S,Res).
-union([H|R],S, [H|Res] ) :- \+(member(H,S)), union(R,S,Res).
+union([H|R],S, [H|Res] ) :- not(member(H,S)), union(R,S,Res).
 \end{lstlisting}
 \end{beamercolorbox}
 \end{itemize}
@@ -745,6 +766,82 @@ not(P).
 \end{itemize}
 \end{frame}
 
+
+\begin{frame}[fragile]
+    \begin{tabular}{lll}
+    \lstinline[basicstyle=\tiny\ttfamily]!p(*(X,Y)) :- q(X), s(Y).! &
+    \lstinline[basicstyle=\tiny\ttfamily]!r(a).! &
+    \lstinline[basicstyle=\tiny\ttfamily]!s(t).! \\
+    \lstinline[basicstyle=\tiny\ttfamily]@q(+(X,Y)) :- r(X), !, r(Y).@ &
+    \lstinline[basicstyle=\tiny\ttfamily]!r(b).! &
+    \lstinline[basicstyle=\tiny\ttfamily]!s(u).! \\
+    \lstinline[basicstyle=\tiny\ttfamily]!q(-(X,Y)) :- r(X), s(Y).! &
+    \lstinline[basicstyle=\tiny\ttfamily]!r(c).! & \\
+    \end{tabular} \\
+\tiny
+\begin{tikzpicture} [edge from parent fork down,level distance=3.5em,align=center] 
+\node {p(W).}
+    child { node (par1) {q(X) \\ \BT}
+              child { node   {q(+(X,Y)).} 
+                    child  { node (q1a) {r(X)\\ \BT } 
+                        child [sibling distance=3em] { node {r(a).
+                                            \only<2->{\\ \textcolor{green}{X=a}} }}
+                        child [sibling distance=3em] { node {r(b).}
+                                edge from parent node [near end] {\only<4->{\textcolor{red}{\large $\times$}} }}
+                        child [sibling distance=3em] { node {r(c).} edge from parent node [near end] {\only<4->{\textcolor{red}{\large $\times$}} }}
+                    }
+                    child { node (q1b) {!  \only<3->{\\ 
+                                        \textcolor{green}{cut}}} edge from parent [draw=none] }
+                    child  { node (q1c) {r(Y)\\ \BT } edge from parent [draw=none] 
+                        child [sibling distance=3em] { node {r(a).} }
+                        child [sibling distance=3em] { node {r(b).} }
+                        child [sibling distance=3em] { node {r(c).} }
+                    }
+              }
+              child [missing]
+              child [missing]
+              child { node   {q(-(X,Y)).} 
+                    child { node (q2a) {r(X)\\ \BT } 
+                        child [sibling distance=2.5em] { node {r(a).} }
+                        child [sibling distance=2.5em] { node {r(b).} }
+                        child [sibling distance=2.5em] { node {r(c).} }
+                    }
+                    child { node (q2b) {s(Y)\\ \BT } edge from parent [draw=none] 
+                        child [sibling distance=2em] { node [xshift=-.5em] {s(t).} }
+                        child [sibling distance=2em] { node [xshift=.5em] {s(u).} }
+                    } edge from parent node {\only<4->{\textcolor{red}{\large $\times$}}}
+              }
+          }
+    child [missing] { node {}}
+    child [missing] { node {}}
+    child { node (par2) {s(Y) \\ \BT} edge from parent [draw=none]
+              child { node [xshift=-.5em] {s(t).} }
+              child { node [xshift=.5em] {s(u).} }
+          };
+\draw [-,blue!50!black] (par1) -- node [fill=white] {AND} (par2);
+\draw [-,blue!50!black] (q1a) -- node [fill=white] {AND} (q1b);
+\draw [-,blue!50!black] (q1b) -- node [fill=white] {AND} (q1c);
+\draw [-,blue!50!black] (q2a) -- node [fill=white] {AND} (q2b);
+\end{tikzpicture}
+\only<5->{
+\lstset{basicstyle=\tiny\ttfamily}
+\begin{itemize}
+\item
+When cut is hit, current solution is kept and all backtracking points from head
+clause to cut are pruned. Backtracking points introduced later still prouces
+alternatives.
+\item
+\lstinline!r(Y)! produces 3 alternatives, \lstinline!s(Y)! at top right produces 2.
+Prolog finds 6 solutions in total.
+\item
+Without a cut: $3\times3=9$ from \lstinline!q(+(X,Y))!, $3\times 2=6$ from
+\lstinline!q(-(X,Y))! give 15 solutions for \lstinline!q(X)!. 15 times 2 solutions
+for \lstinline!s(Y)! gives 30 solutions.
+\end{itemize}
+}
+\vfill
+\end{frame}
+
 \begin{frame}[fragile]
 \def\M{\textcolor{gray}{ $\bigcirc$}}
 The following program generates 90 alternatives. Putting \structure{cut} in marked
@@ -769,6 +866,70 @@ s(u).
 \noindent
 Number of solutions per cut will be:\\
 \only<2->{90, 6, 2, 1,\\ 54, 18, 6,\\ 90, 66, 60}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Example: Binary Search Tree}
+\small
+\begin{itemize}
+\item we can represent a tree as a Prolog structure. Each
+node contains a key value pair in \lstinline!p(k,v)!.\\
+\begin{beamercolorbox}{oexample}
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
+insert(e, K,V, tree(p(K,V),e,e)).
+
+insert(tree(p(K,_),L,R), K, V, tree(p(K,V),L,R)) :- !.
+insert(tree(p(H,HV),L,R), K, V, tree(p(H,HV),LRes,R)) :- 
+        K < H ,!, insert(L, K, V, LRes).
+insert(tree(p(H,HV),L,R), K, V, tree(p(H,HV),L,RRes)) :-
+        insert(R, K, V, RRes).
+
+insertlist(R,[],R).
+insertlist(R,[K,V|L], RR) :- insert(R,K,V,RTemp), 
+                             insertlist(RTemp,L,RR).
+
+search(tree(p(K,V),_,_), K, V) :- ! .
+search(tree(p(H,_),L,_), K, V) :- K < H, !, search(L,K,V).
+search(tree(p(_,_),_,R), K, V) :- search(R,K,V).
+
+?- insertlist(e,[4,veli,1,ali,6,hasan,2,ayse,5,fatma],R).
+R = tree(p(4, veli), tree(p(1, ali), e, tree(p(2, ayse), e, e)), 
+                     tree(p(6, hasan), tree(p(5, fatma), e, e), e))
+\end{lstlisting}
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{N-Queens}
+\small
+\begin{itemize}
+\item Place N queens on a N by N board with
+	no queen is threatening others.\\
+\begin{beamercolorbox}{oexample}
+\begin{lstlisting}
+% fill a list with values from M to N
+getMN(N,N,[N]).
+getMN(N,M,[N|R]) :- N < M,Nplus1 is N+1,getMN(Nplus1,M,R).
+
+% get N queens, N columns and place them with state []
+% queen id is assume to be the row
+queen(N,R) :- getMN(1,N,Queens),getMN(1,N,Positions),
+        place(Queens,Positions,[],R).
+
+% get first queen, pick a position, check it is compatible with
+% existing state, place rest with new state
+place([],[],L,L).
+place([Q|QRest],PList,In,RResult) :- select(P,PList,PRest), 
+    compatible(Q,P,In), place(QRest,PRest,[Q-P|In],RResult).
+
+% compatibility, test not same column and diagonal. 
+compatible(_,_,[]).
+compatible(K,P,[Kk-Pp|R]) :- P =\= Pp, Kdiff is abs(K-Kk), 
+        Pdiff is abs(P-Pp), Kdiff =\= Pdiff, compatible(K,P,R).
+\end{lstlisting}
+\end{beamercolorbox}
+\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -821,6 +982,123 @@ parse(State, []) :- final(State).
 parse(State, [H|R]) :- trans(State, New, H), parse(State,R).
 parse(State, Inp) :- empty(State, New), parse(State,Inp).
 parse(Inp) :- start(S), parse(S, Inp).
+\end{lstlisting}
+\end{beamercolorbox}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Example: Numbers game}
+\small
+\begin{itemize}
+\item Given list of numbers, i.e. \texttt{[1,3,5,9,30]}, find arithmetic operations to calculate the given number, i.e. 331 = (9-3+5)*30+1
+\item \lstinline!findit(numlist, number, expression)!
+\item Pick two numbers from list, pick an operator, compose an expression and put it
+back on  the remaining list and try with new list. When the expression evaluates to the number, it is a success.\\
+\begin{beamercolorbox}{oexample}
+\begin{lstlisting}
+% if top element evaluates to number, it is the result
+findit([A|_],V,A) :- V is A. 
+% pick two values, pick one operand, check if valid,
+% compose an expression, test with new expression
+findit(L,V,T) :- select(A,L,AR), select(B,AR,Rest),
+        member(O,[+,-,//,*]), check(O,A,B), E =.. [O,A,B],
+        findit([E|Rest],V,T).
+check(+,_,_).
+check(*,_,_).
+check(-,A,B) :- A>B.
+check(//,A,B) :- 0 is A mod B.
+\end{lstlisting}
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\small
+Implementation creates duplicate results because of symmetry in `+' and `*'.
+In symmetric operators use combination, \lstinline!taketwo! which will get
+ \lstinline!a, b!  once, not \lstinline!b,a!.
+\begin{beamercolorbox}{oexample}
+\begin{lstlisting}
+taketwo(A, B, [A|R] , Rem ) :- select(B, R, Rem). 
+taketwo(A, B, [H|R], [H|Rem]) :- taketwo(A, B, R, Rem).
+
+% if top element evaluates to number, it is the result
+findit([A|_],V,A) :- V is A. 
+% asymmetric ops.
+findit(L,V,T) :- select(A,L,AR), select(B,AR,Rest),
+        member(O,[-,//]), check(O,A,B), E =.. [O,A,B],
+        findit([E|Rest],V,T).
+% symmetric ops.
+findit(L,V,T) :- taketwo(A,B,L,Rest),
+        member(O,[+,*]),  E =.. [O,A,B],
+        findit([E|Rest],V,T).
+
+check(-,A,B) :- A>B.
+check(//,A,B) :- 0 is A mod B.
+\end{lstlisting}
+\end{beamercolorbox}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Example: Symbolic Differentiation}
+\small
+\begin{itemize}
+\item Given an expression containing the variable, find the derivative
+of the expression with respect to that variable.
+\item \lstinline!diff(exp, var, diffexp)!.
+\item \lstinline!diff(3*x*x+2x+1, x, D)! results in
+\lstinline!D = 6*x+2.!.\\
+\begin{beamercolorbox}{oexample}
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
+diff(A, A, 1) :- !.   %  x -> 1
+diff(A, _, 0) :- number(A).  % c -> 0 
+diff(-A, X, -C) :- diff(A, X, C).  %  -f(x) = - f(x)
+diff(A+B, C, D+E) :- diff(A, C, D), diff(B, C, E).
+diff(A-B, C, D-E) :- diff(A, C, D), diff(B, C, E).
+diff(A*B, C, A*D) :- number(A), diff(B, C, D),!.
+diff(A*B, C, A*D+B*E) :- diff(A, C, E), diff(B, C, D).
+diff(A/B, C, D) :- diff(A*B^(-1), C, D).
+diff(A^B, C, B*A^B1*D) :- number(B), diff(A, C, D), B1 is B - 1.
+diff(log(A), B, C*A^ -1) :- diff(A, B, C).
+
+?- diff(1/((x^2+1)*(x-1)),x,R).
+R = 1* (-1* ((x^2+1)* (x-1))^ (-1-1)* 
+        ((x^2+1)* (1-0)+ (x-1)* (2*x^ (2-1)*1+0))).
+\end{lstlisting}
+\end{beamercolorbox}
+A simplifier is needed.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\small
+\begin{beamercolorbox}{oexample}
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
+constant(X) :- number(X),!.
+constant(A):- A =.. [_,T1,T2] , constant(T1),constant(T2).
+constant(A) :- A =.. [_,T1] , constant(T1).
+s(X,Y) :- constant(X),!,Y is X.
+s(A*1,Y) :- simp(A,Y),!.
+s(1*A,Y) :- simp(A,Y),!.
+s(-1*A,-Y) :- simp(A,Y),!.
+s(A+0,Y) :- simp(A,Y),!.
+s(0+A,Y) :- simp(A,Y),!.
+s(A-0,Y) :- simp(A,Y),!.
+s(0-A,-Y) :- simp(A,Y),!.
+s(A^1,AE) :- simp(A,AE),!.
+s(1^_,1) :- !.
+s(_^0,1) :- !.
+s(X,X).
+
+simp(A*B,R) :- simp(A,AE),simp(B,BE),s(AE*BE,R),!.
+simp(A+B,R) :- simp(A,AE),simp(B,BE),s(AE+BE,R),!.
+simp(A-B,R) :- simp(A,AE),simp(B,BE),s(AE-BE,R), !.
+simp(A^B,R) :- simp(A,AE),simp(B,BE),s(AE^BE,R),!.
+simp(X,X).
+derivative(X,R) :- diff(X,Z), simp(Z,R).
+
+?- derivative(1/((x^2+1)*(x-1)), x, R).
+R = - ((x^2+1)* (x-1))^ -2* (x^2+1+ (x-1)* (2*x)).
 \end{lstlisting}
 \end{beamercolorbox}
 \end{frame}
