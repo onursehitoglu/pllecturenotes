@@ -873,7 +873,8 @@ Number of solutions per cut will be:\\
 \small
 \begin{itemize}
 \item we can represent a tree as a Prolog structure. Each
-node contains a key value pair in \lstinline!p(k,v)!.\\
+node contains a key value pair in \lstinline!p(k,v)!.
+\end{itemize}
 \begin{beamercolorbox}{oexample}
 \begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
 insert(e, K,V, tree(p(K,V),e,e)).
@@ -893,11 +894,10 @@ search(tree(p(H,_),L,_), K, V) :- K < H, !, search(L,K,V).
 search(tree(p(_,_),_,R), K, V) :- search(R,K,V).
 
 ?- insertlist(e,[4,veli,1,ali,6,hasan,2,ayse,5,fatma],R).
-R = tree(p(4, veli), tree(p(1, ali), e, tree(p(2, ayse), e, e)), 
-                     tree(p(6, hasan), tree(p(5, fatma), e, e), e))
+R = tree(p(4, veli), tree(p(1, ali), e, tree(p(2, ayse),e,e)), 
+                   tree(p(6, hasan), tree(p(5, fatma),e,e),e))
 \end{lstlisting}
 \end{beamercolorbox}
-\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -905,16 +905,17 @@ R = tree(p(4, veli), tree(p(1, ali), e, tree(p(2, ayse), e, e)),
 \small
 \begin{itemize}
 \item Place N queens on a N by N board with
-	no queen is threatening others.\\
+	no queen is threatening others.
+\end{itemize}
 \begin{beamercolorbox}{oexample}
 \begin{lstlisting}
-% fill a list with values from M to N
-getMN(N,N,[N]).
-getMN(N,M,[N|R]) :- N < M,Nplus1 is N+1,getMN(Nplus1,M,R).
+% give a list [N,N-1,...,0]
+fill(N,[N|R]) :- M is N-1, M > 0, !, fill(M,R).
+fill(L, [L]).
 
 % get N queens, N columns and place them with state []
 % queen id is assume to be the row
-queen(N,R) :- getMN(1,N,Queens),getMN(1,N,Positions),
+queen(N,R) :- fill(N,Queens), fill(1,N,Positions),
         place(Queens,Positions,[],R).
 
 % get first queen, pick a position, check it is compatible with
@@ -925,11 +926,10 @@ place([Q|QRest],PList,In,RResult) :- select(P,PList,PRest),
 
 % compatibility, test not same column and diagonal. 
 compatible(_,_,[]).
-compatible(K,P,[Kk-Pp|R]) :- P =\= Pp, Kdiff is abs(K-Kk), 
-        Pdiff is abs(P-Pp), Kdiff =\= Pdiff, compatible(K,P,R).
+compatible(Q,P,[QT-PT|R]) :- P =\= PT, QDel is abs(Q-QT), 
+        PDel is abs(P-PT), QDel =\= PDel, compatible(Q,P,R).
 \end{lstlisting}
 \end{beamercolorbox}
-\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
