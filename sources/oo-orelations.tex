@@ -404,13 +404,22 @@ objects.
 \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
 \begin{itemize}
 \item Constructors of contained objects called just before the body of container constructor
 executed.
 \item Destructors of contained objects called just after the container destructor called.
 \item Container constructor can pass arguments to member object constructors.\\
-	\lstinline!ACons(int x):a(x),b(x),c(x) \{...\}!
+	\lstinline!ACons(int x):c(x),b(x+2),a(x+1) {...}!
+\item The list of comma separated initializers between the column and opening brace is called \structure{member initializer list}. It defines how members are initialized in constructor syntax.
+\item The order of member initializer list is irrelevant.
+Member object constructors are called in \structure{declaration order}. For definition:\\
+\lstinline!class ACons { int a, b, c; ...}!\\
+
+\noindent
+call order will be \lstinline!a(x+1); b(x+2); c(x)!, then body of the constructor
+is executed.
+
 \item \lstinline!friend! declaration can be used if the objects need to access others private
 member.
 \end{itemize}
@@ -552,15 +561,24 @@ public:
 \end{lstlisting}}
 \subsection{Integrity of Superclass}
 \begin{frame}
+\small
 \begin{itemize}
 \item The inherent superclass object should have a valid value.
 \item Constructors/Destructors should be called
 \begin{beamercolorbox}{cexample}
 \codeInhCons
 \end{beamercolorbox}
-\item Similar to contained objects:\\
-	Superclass constructor called just before class constructor\\
-	Superclass destructor called just after class destructor\\
+\item
+	Base class constructors are called just before the class constructor\\
+	Base class destructor is called just after the class destructor\\
+\item Similar to contained objects, \structure{member initializer list}
+can contain base class initializers as well. The order of execution
+will be:
+\begin{enumerate}
+\item base classes in order of appearance in declaration
+\item member objects in order of appearance.
+\end{enumerate}
+
 \end{itemize}
 \end{frame}
 
