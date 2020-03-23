@@ -428,8 +428,11 @@ parameter
 \end{itemize}
 \end{frame}
 
-\defverbatim[colored]\codeparpassC{
-\begin{lstlisting}[language={C},escapechar=\#]
+\begin{frame}[fragile]
+\begin{columns}
+ \begin{column}{.55\linewidth}
+  \begin{beamercolorbox}{cexample}
+\begin{lstlisting}[language={C}]
 int x=1, y=2;
 void f(int a, int b) {
     x += a+b;
@@ -441,12 +444,7 @@ int main() {
     printf("x:%d , y:%d\n",x,y);
     return 0;
 }
-\end{lstlisting}}
-\begin{frame}
-\begin{columns}
- \begin{column}{.55\linewidth}
-  \begin{beamercolorbox}{cexample}
-  \codeparpassC
+\end{lstlisting}
   \end{beamercolorbox}
  \end{column}
 \begin{column}{.45\linewidth}\scriptsize
@@ -514,11 +512,23 @@ parameter variable. Same memory area is shared by two variable references.\\
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[fragile]
 \begin{columns}
  \begin{column}{.55\linewidth}
   \begin{beamercolorbox}{cexample}
-  \codeparpassC
+\begin{lstlisting}[language={C}]
+int x=1, y=2;
+void f(int a, int b) {
+    x += a+b;
+    a++;
+    b=a/2;
+}
+int main() {
+    f(x,y);
+    printf("x:%d , y:%d\n",x,y);
+    return 0;
+}
+\end{lstlisting}
   \end{beamercolorbox}
  \end{column}
 \begin{column}{.45\linewidth}\small
