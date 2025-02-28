@@ -649,12 +649,13 @@ select(E, [H|R], [H|R2]) :- select(E, R, R2).
 
 \begin{frame}[fragile]
 \begin{itemize}
-\item Subset:\\
+\item Subset relation (ordering of values should match for both handsides.
+Precisely it is subsequence relation):\\
 \begin{beamercolorbox}{oexample}
 \begin{lstlisting}[escapeinside=`']
 subset([],[]).
-subset(Rsub,[_|R]) :- subset(Rsub,R).
-subset([H|Rsub],[H|R]) :- subset(Rsub,R).
+subset(A,[_|R]) :- subset(A,R).           % a sequence without first
+subset([H|RA],[H|RB]) :- subset(RA,RB).   % a sequence with first
 \end{lstlisting}
 \end{beamercolorbox}
 \item Permutations:\\

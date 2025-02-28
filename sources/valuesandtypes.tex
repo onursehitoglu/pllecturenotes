@@ -85,6 +85,12 @@
 \item lists
 \item functions
 \end{itemize}
+\item Python types
+\begin{itemize}
+\item \texttt{bool, int, float, complex}
+\item \texttt{str, bytes, tuple, list, set, dict}
+\item classes, functions
+\end{itemize}
 \item Each type represents a set of values.
 Is that enough?\\
 \pause
@@ -193,33 +199,26 @@ $S \times T = \{ (a,1), (a,2), (b,1), (b,2), (c,1), (c,2) \}$\\
 \end{frame}
 
 
-\defverbatim[colored]\codecartC{%
-\begin{lstlisting}[language={C}]
-struct Person {
-     char name[20];
-     int no;
-} x = {"Osman Hamdi",23141};
-\end{lstlisting}}
-
-\defverbatim[colored]\codecartH{%
-\begin{lstlisting}[language={Haskell}]
-type People=(String,Int)
-...
-x = ("Osman Hamdi",23141)::People
-\end{lstlisting}}
-
 \begin{frame}[fragile]
 \begin{itemize}
 \item C {\tt struct}, Pascal {\tt record}, functional languages \structure{tuple}
 \item \textbf{in C:} string $\times$ int
 \begin{beamercolorbox}{cexample}
-\codecartC
-\end{beamercolorbox}
+\begin{lstlisting}[language={C}]
+struct Person {
+     char name[20];
+     int no;
+} x = {"Osman Hamdi",23141};
+\end{lstlisting}\end{beamercolorbox}
 \item \textbf{in Haskell}: string  $\times$ int 
 \begin{beamercolorbox}{hexample}
- \codecartH
+\begin{lstlisting}[language={Haskell}]
+type People=(String,Int)
+...
+x = ("Osman Hamdi",23141)::People
+\end{lstlisting}
 \end{beamercolorbox}
-\item \textbf{in Python}: string $\times$ int\\
+\item \textbf{in Python}: string $\times$ int
 \begin{beamercolorbox}{pexample}
 \begin{lstlisting}[language=python]
 x = ( "Osman Hamdi", 23141)
@@ -254,7 +253,7 @@ Haskell: string $\times$ int $\times$ float $\times$ string
 \begin{beamercolorbox}{hexample}
  \codecartH
 \end{beamercolorbox}\\
-Python: str $\times$ int $\times$ float $\times$ str\\
+Python: str $\times$ int $\times$ float $\times$ str
 \begin{beamercolorbox}{pexample}
 \begin{lstlisting}[language=python]
 x = ("Osman Hamdi",23141,3.98,"Yazar")
@@ -512,12 +511,19 @@ f a = if mod a 2 == 0 then 0 else 1
 	 \item Side effect, output, error, termination problem.
 	\end{itemize}
    \end{column}
-  \end{columns}\ \\ \hrule
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{Cartesian Mappings}
  \begin{itemize}
   \item Cartesian mappings:\\
 	\texttt{double a[3][4];}\\
 	\texttt{double f(int m, int n);}
-  \item \texttt{int$\times$int$\mapsto$double} and \texttt{int$\mapsto$(int$\mapsto$double)}
+  \item Cartesian mapping versus mappings of mappings:\\
+   	\texttt{int$\times$int$\mapsto$double} and \texttt{int$\mapsto$(int$\mapsto$double)}
+  \item For cartesian mapping, you need two or more values to get the value of the mapping
+  \item In mapping of mappings, you get a new mapping as you supply a value.
  \end{itemize}
 \end{frame}
 
@@ -625,10 +631,11 @@ $S = $ \begin{tikzpicture}
 [node distance=5mm,  baseline=(current bounding box.center),
  set/.style={line width=1.5pt, shape=ellipse, draw=black!50!blue}]
 \matrix [row sep=.5mm] (setA)
-{\node (aa) {$\bullet $ a} ; \\
-\node  (ab) {$\bullet $ b}; \\
+{\node (aa) {$\bullet $ 1} ; \\
+\node  (ab) {$\bullet $ 2}; \\
+\node  (ac) {$\bullet $ 3}; \\
 };
-\node[set,minimum size=1.5cm,fit={(aa) (ab)}] {};
+\node[set,minimum size=1.5cm,fit={(aa) (ac)}] {};
 \end{tikzpicture}
 \hfill
 ${\cal P}(S) = $ \begin{tikzpicture}
@@ -803,14 +810,14 @@ Tree\;\alpha= & \{empty\} \cup \{node(x,empty,empty) \mid x \in \alpha\} \cup \\
 \subsection{Strings}
 \begin{frame}
 \frametitle{Strings}
-Language design choice:
+\begin{itemize}[<+->]
+\item Language design choice:
 \begin{enumerate}[<+->]
 \item Primitive type (ML, Python): \\
 	Language keeps an internal table of strings
 \item Character array (C, Pascal, ...)
 \item Character list (Haskell, Prolog, Lisp)
 \end{enumerate}
-\begin{itemize}
  \item Design choice affects the complexity and efficiency of:\\
   concatenation, assignment, equality, lexical order, decomposition
 \end{itemize}
@@ -1231,8 +1238,9 @@ z = [ a | a <- x, mod a 3 == 1 ]   {-- [1,4,7,10] --}
 \defverbatim[colored]\codeiterP{
 \begin{lstlisting}[language={Python}]
 x = [1,2,3,4,5,6,7,8,9,10,11,12]
-y = [ a*2  for a in x ]               #   [2,4,6,8,...24 ] 
-z = [ a for a in x if a % 3 == 1 ]    #  [1,4,7,10]
+y = [ a*2  for a in x ]             #  [2,4,6,8,...24 ] 
+z = [ a for a in x if a % 3 == 1 ]  #  [1,4,7,10]
+z = { a:a*a for a in x}             #  {1:1,4:16,7:49,10:100}
 \end{lstlisting}}
 
 \subsection{Iterative Expressions}

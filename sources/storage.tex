@@ -398,44 +398,11 @@ start \& main() \& f() \& g() \& \& g() \& f() \&   h()  \&   h()  \&  \&   h() 
 }
 \end{itemize}
 \end{frame}
-%\item {\tiny \psset{linewidth=.4pt,labelsep=0pt}
-%\begin{tabular}[t]{llllrrllrrrr}
-% \rnode[bl]{bb}{start} & \rnode[bl]{bm}{main()} & \rnode[bl]{bf}{f()} & 
-%	\rnode[bl]{bg}{g()} & \rnode[br]{cg}{g()} & \rnode[br]{cf}{f()} & 
-%	\rnode[bl]{bh1}{h()} & \rnode[bl]{bh2}{h()} & \rnode[br]{ch2}{h()} & 
-%	\rnode[br]{ch1}{h()} & \rnode[br]{cm}{main()} & \rnode[br]{cb}{end} \\
-%\rnode{dbb}{} & \rnode{dbm}{} & \rnode{dbf}{} & 
-%	\rnode{dbg}{} & \rnode{dcg}{} & \rnode{dcf}{} & 
-%	\rnode{dbh1}{} & \rnode{dbh2}{} & \rnode{dch2}{} & 
-%	\rnode{dch1}{} & \rnode{dcm}{} & \rnode{dcb}{} \\
-%\ncline{->}{bb}{dbb}
-%\ncline[linecolor=green!40!black]{->}{bm}{dbm} 
-%\ncline[linecolor=blue!60!black]{->}{bf}{dbf} 
-%\ncline[linecolor=orange!60!black]{->}{bg}{dbg}  
-%\ncline[linecolor=orange!60!black]{<-}{cg}{dcg}
-%\ncline[linecolor=blue!60!black]{<-}{cf}{dcf} 
-%\ncline[linecolor=violet]{->}{bh1}{dbh1} 
-%\ncline[linecolor=violet!70!black]{->}{bh2}{dbh2}
-%\ncline[linecolor=violet!70!black]{<-}{ch2}{dch2}
-%\ncline[linecolor=violet]{<-}{ch1}{dch1} 
-%\ncline[linecolor=green!40!black]{<-}{cm}{dcm}
-%\ncline{<-}{cb}{dcb}
-%\rnode{kb}{} & & & & & & & & & & & \rnode{kc}{} \\ 
-%\ncline{|-|}{kb}{kc}\mput{\psframebox*{global}}
-%  & \rnode{mb}{} & & & & & & & & & \rnode{mc}{} & \\ 
-%\ncline[linecolor=green!40!black]{|-|}{mb}{mc}\mput{\psframebox*{main() local}}
-%  &  & \rnode{fb}{} & & & \rnode{fc}{} & \rnode{h1b}{} & & & \rnode{h1c}{} & & \\ 
-%\ncline[linecolor=blue!60!black]{|-|}{fb}{fc}\mput{\psframebox*{f() local}}
-%\ncline[linecolor=violet]{|-|}{h1b}{h1c}\mput{\psframebox*{h() local}}
-%  &  &  & \rnode{gb}{} & \rnode{gc}{} & &  & \rnode{h2b}{} & \rnode{h2c}{} & & & \\ 
-%\ncline[linecolor=orange!60!black]{|-|}{gb}{gc}\Bput{g() local}
-%\ncline[linecolor=violet!70!black]{|-|}{h2b}{h2c}\Bput{h() local}
-%
-%\end{tabular}
-%}
 
-\defverbatim[colored]\codeomurC{
-\begin{lstlisting}[language={C},basicstyle=\tiny\ttfamily]
+\begin{frame}[fragile]
+\begin{columns}
+\begin{column}{.5\linewidth}\begin{beamercolorbox}{cexample}
+ \begin{lstlisting}[language={C},basicstyle=\tiny\ttfamily]
 double x;
 int h(int n) {
    int a;
@@ -461,12 +428,7 @@ int main() {
     ...;
     return 0;
 }
-\end{lstlisting}}
-\begin{frame}
-\begin{columns}
-\begin{column}{.5\linewidth}
- \begin{beamercolorbox}{cexample}
-\codeomurC
+\end{lstlisting}
  \end{beamercolorbox}
 \end{column}
 \begin{column}{.5\linewidth}
