@@ -197,7 +197,7 @@ distinct.
 \begin{itemize}
  \item Program contains the global scope and only a single level local scope of function
  definitions. No further nesting is possible.
- \item \structure{Fortran} and partially \structure{C} has flat block structure.\\
+ \item \structure{Fortran} and \structure{C} functions have flat block structure.\\
 {\tiny \tt
 \begin{tabular}{|>{\columncolor{blue!15!white}}p{\linewidth}|} \hline
    int x;\\
@@ -255,8 +255,8 @@ distinct.
    \end{tabular}\\
    ....\\ \hline
 \end{tabular}}
-\item C block commands can be nested.
-\item GCC extensions (\structure{Not C99 standard!}) to C allow nested function definitions.
+\item \structure{C} block commands can be nested.
+\item \structure{GCC} extensions (\structure{Not in any C standard!}) to C allow nested function definitions.
 \end{itemize}
 \end{frame}
 
@@ -435,6 +435,9 @@ in func x + let other x = x - 1
                 y = 2
             in func x
 \end{lstlisting}
+\item Static binding (default) binds outer \lstinline{other} for both \lstinline{func} calls.
+	In dynamic binding (hypothetical), first call body binds outer \lstinline{other} with \lstinline{y=10}, 
+	second call body binds inner \lstinline{other} with \lstinline{y=2},
 \end{beamercolorbox}
 \end{itemize}
 \end{frame}
@@ -496,7 +499,7 @@ in func x + let other x = x - 1
 \begin{frame}
 \frametitle{Collateral Declarations}
 \begin{itemize}
- \item \texttt{Start; D$_1$ and D$_2$ and ...  and T$_n$ ; End}
+ \item \texttt{Start; D$_1$ and D$_2$ and ...  and D$_n$ ; End}
  \item Each declaration is evaluated in the environment preceding the declaration group.
  Declared identifiers are available only after all finish.
 \texttt{D$_1$},... \texttt{D$_n$} uses in the environment of \texttt{Start}. They are 
@@ -577,19 +580,8 @@ t=let x=1
 \end{itemize}
 \end{frame}
 
-\defverbatim[colored]\codeblokcomC{
-\begin{lstlisting}[language={C},escapechar=\#]
-int x=3, i=2;
-x += i;
-while (x>i) { 
-    int i=0;
-    ...
-    i++;
-}
-/* i is 2 again */
-\end{lstlisting}}
 \subsection{Block Commands}
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Block Commands}
 \begin{itemize}
  \item Similar to block expressions, declarations done inside a block command is available only
@@ -597,21 +589,25 @@ while (x>i) {
  the block. 
  \item \ \\
 \begin{beamercolorbox}{cexample}
-\codeblokcomC
+\begin{lstlisting}[language={C},escapechar=\#]
+int x=3, i=2;
+x += i;
+for (i = 0; x > i ; i++) {  /* i are bound to the outer i */
+    int i = 0; /* this i hides the i above */
+    ...
+    i++;       /* this is bound to local i */
+}
+/* inner i is not accessible */
+\end{lstlisting}
 \end{beamercolorbox}
 \end{itemize}
 
 \end{frame}
 
-\defverbatim[colored]\codeblokdecH{
-\begin{lstlisting}[language={Haskell},escapechar=\#]
-fifthpower x = (forthpowerx) * x where
-		squarex = x*x
-		forthpowerx = squarex*squarex
-\end{lstlisting}}
 \subsection{Block Declarations}
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Block Declarations}
+{\small
 \begin{itemize}
  \item A declaration is made in a local environment of declarations. Local declarations
  	are not made available to the outer environment.
@@ -619,9 +615,31 @@ fifthpower x = (forthpowerx) * x where
  	Only \texttt{D$_{exp}$} is added to environment. Body of \texttt{D$_{exp}$} has all local
 	declarations available in its environment.
 \begin{beamercolorbox}{hexample}
- \codeblokdecH
+\begin{lstlisting}[language={Haskell},escapechar=\#,basicstyle=\tiny\ttfamily]
+gcd a b | (a < 0) || (b < 0) = error "negative"
+        | a < b = localgcd a b
+        | otherwise = localgcd b a  
+    where 
+       localgcd a b | a == 0 = b
+                    | otherwise = localgcd (b `mod` a) a
+\end{lstlisting}
+\end{beamercolorbox}
+\item A hypothetical syntax (\lstinline{let} is only for expressions):
+\begin{beamercolorbox}{hexample}
+\begin{lstlisting}[language={Haskell},escapechar=\#,basicstyle=\tiny\ttfamily]
+let -- following declarations are local only
+   data Hidden k v = ... -- actual data structure is hidden
+   inserttree k v ... = ... -- internal functions are hidden
+   traversetree ... = ...
+ in -- only the following declarations are available outside
+   data DS k v  = T (Hidden k v) deriving Show
+   emptyds = T HEmpty
+   insertds k v (T hidden) = T $ inserttree k v hidden
+   traverseds (T hidden) = traversetree hidden
+\end{lstlisting}
 \end{beamercolorbox}
 \end{itemize}
+}
 \end{frame}
 
 \section{Summary}
