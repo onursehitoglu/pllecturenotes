@@ -16,14 +16,14 @@ all: $(slides) $(handouts)
 #	rsync -av $(handouts) ../handouts/
 
 ../handouts/ceng242-%.pdf : %.tex
-	-pdflatex -jobname=$(@:../handouts/%.pdf=%) '\documentclass[handout,compress,xcolor=table]{beamer}\input{$<}' && \
-	pdflatex -jobname=$(@:../handouts/%.pdf=%) '\documentclass[handout,compress,xcolor=table]{beamer}\input{$<}' && \
+	-xelatex -jobname=$(@:../handouts/%.pdf=%) '\documentclass[handout,compress,xcolor=table]{beamer}\input{$<}' && \
+	xelatex -jobname=$(@:../handouts/%.pdf=%) '\documentclass[handout,compress,xcolor=table]{beamer}\input{$<}' && \
 	mv $(@:../handouts/%=%) $(@) && \
 	rm $(@:../handouts/%.pdf=%).{aux,log,nav,out,snm,vrb,toc}
 	
 ../slides/ceng242-sl-%.pdf : %.tex
-	-pdflatex -jobname=$(@:../slides/%.pdf=%) '\documentclass[slides,compress,xcolor=table]{beamer}\input{$<}' && \
-	pdflatex -jobname=$(@:../slides/%.pdf=%) '\documentclass[slides,compress,xcolor=table]{beamer}\input{$<}' && \
+	-xelatex -jobname=$(@:../slides/%.pdf=%) '\documentclass[slides,compress,xcolor=table]{beamer}\input{$<}' && \
+	xelatex -jobname=$(@:../slides/%.pdf=%) '\documentclass[slides,compress,xcolor=table]{beamer}\input{$<}' && \
 	mv $(@:../slides/%=%) $(@) && \
 	rm $(@:../slides/%.pdf=%).{aux,log,nav,out,snm,vrb,toc}
 

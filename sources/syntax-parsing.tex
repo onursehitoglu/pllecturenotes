@@ -864,7 +864,7 @@ RB
 \item Two main classes of parser:
 	\begin{itemize}
 	\item Top down parsing
-	\item Tottom up parsing
+	\item Bottom up parsing
 	\end{itemize}
 \end{itemize}
 \end{frame}
@@ -893,8 +893,8 @@ RB
 	from left to right.
 \item Left recursion in grammar is a problem. Elimination of left recursion
 	needed.
-\item \structure{Deterministic parsing:} Look at input symbols to choose next
-	rule to apply.
+\item \structure{Deterministic parsing:} Look at input symbols to choose the 
+	next rule to apply.
 \item \structure{recursive descent parsers}, \structure{LL} family parsers 
 	are top-down parsers
 \end{itemize}
@@ -905,20 +905,20 @@ RB
 typedef enum {ident, number, lparen, rparen, times, 
 	slash, plus, minus} Symbol;
 int accept(Symbol s) { if (sym == s) { next(); return 1; } 
-	return 0;
+	return 0; // consume and match a nonterminal symbol
 }
-void factor(void) {
+void factor(void) { // <factor> -> <ident> | <number> | ( <expr> )
     if (accept(ident)) ;
     else if (accept(number)) ;
     else if (accept(lparen)) { expression(); expect(rparen);}
     else { error("factor: syntax error at ",currsym); next(); }
 }
-void term(void) {
+void term(void) { // <term> -> <factor> | <factor> * <factor>
     factor();
     while (accept(times) || accept(slash))
         factor();
 }
-void expression(void) {
+void expression(void) { // <expression> -> <term> | <term> + <term>
     term();
     while (accept(plus) || accept(minus))
         term();
@@ -939,7 +939,7 @@ void expression(void) {
 \item Rule choices are based on the current input symbol. \texttt{accept}
 	checks a terminal and consumes if matches.
 \item Cannot handle direct or indirect left recursion. A function has to call 
-	itself before anything else.
+	itself without any check.
 \item Hand coded, not flexible.
 \end{itemize}
 \end{frame}
@@ -989,8 +989,8 @@ N	& 5	& 6	&	&    \\\hline
 \begin{frame}
 \frametitle{Bottom-up Parsing}
 \begin{itemize}
-\item Start from input sentence and merge parts of sentential form matching RHS of a rule into LHS at each step. Try to reach the starting non-terminal.
-	reach the input sentence \\ {\small
+\item Start from input sentence and merge parts of sentential forms matching RHS of a rule into LHS at each step. Try to reach the starting non-terminal.
+	\\ {\small
 	\[ \begin{array}{l}
 	~~ a = a + b * a  ~~ \mapsto
 	~~ a = \langle fact \rangle + b * a  ~~ \mapsto 
@@ -1004,7 +1004,7 @@ N	& 5	& 6	&	&    \\\hline
 	\langle assign \rangle 
 \end{array}
 	\]}
-\item Simplest form gives rightmost derivation of a grammar (in reverse) processing input
+\item Simplest form gives the rightmost derivation of a grammar (in reverse) processing input
 	from left to right.
 \item Shift-reduce parsers are bottom-up:
 	\begin{itemize}
@@ -1047,10 +1047,9 @@ match(LHS,List,L) :- rule(LHS,RHS),  reverse(RHS,NRHS),
 
 \begin{frame}
 \begin{itemize}
-\item Shift reduce parser tries all non-deterministic shift combinations to get all
-	parses.
-\item For deterministic parsing states based on input lookahead or
-	precedence required
+\item Shift reduce parser needs to try all non-deterministic shift combinations to get all parses.
+\item For deterministic parsing, states based on input lookahead or
+	precedence are required.
 \item Deterministic bottom up parsers: LALR, SLR(1).
 \end{itemize}
 \end{frame}
