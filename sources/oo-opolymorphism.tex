@@ -268,6 +268,35 @@ Assuming \lstinline!p! points to an object of A or B, \lstinline!p->g(..);! call
 (assume 0 is the offset of \lstinline!f!, 1 is the offset of \lstinline!g!)
 \end{frame}
 
+\subsection{Run Time Type Inference}
+\begin{frame}[fragile]
+\frametitle{Run Time Type Inference}
+\begin{itemize}
+\item Compiler makes some type information available at run-time
+throught a virtual pointer
+\item \lstinline{typeid(classname)} returns a \lstinline{type_info} object for the data type.
+This object can be used for comparing data types at run time.
+\item \lstinline{dynamic_cast<newtype>(expression)} can be used for safe pointer/reference comparison
+using run-time type information.
+\item Example:
+\begin{beamercolorbox}{cexample}
+\begin{lstlisting}[language={C++}]
+#include<typeinfo>
+class A { ...; virtual f() {...};}
+class B : public A { ...}
+class C : public A { ...}
+int main() {
+   A a; B b; C c;
+   A * pa = &a, pb = &b, pc = *c , pd = *b;
+   cout << typeid(*pc).name() << endl; // get current type name
+   if (typeid(*pc) == typeid(*pd)) {..} // compare types
+   pc = dynamic_cast<C *>(pa); // safe cast, NULL if error.
+}
+\end{lstlisting}
+\end{beamercolorbox}
+\end{itemize}
+\end{frame}
+
 \section{Generic Abstraction}
 \begin{frame}
 \frametitle{Generic Abstraction}
