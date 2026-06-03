@@ -980,8 +980,8 @@ $q_0 \in Q$ start state, $F \subseteq Q$ final states.
 \begin{beamercolorbox}{oexample}
 \begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
 parse(State, []) :- final(State).
-parse(State, [H|R]) :- trans(State, New, H), parse(State,R).
-parse(State, Inp) :- empty(State, New), parse(State,Inp).
+parse(State, [H|R]) :- trans(State, New, H), parse(New,R).
+parse(State, Inp) :- empty(State, New), parse(New,Inp).
 parse(Inp) :- start(S), parse(S, Inp).
 \end{lstlisting}
 \end{beamercolorbox}
@@ -1016,14 +1016,14 @@ check(//,A,B) :- 0 is A mod B.
 \begin{frame}[fragile]
 \small
 Implementation creates duplicate results because of symmetry in `+' and `*'.
-In symmetric operators use combination, \lstinline!taketwo! which will get
- \lstinline!a, b!  once, not \lstinline!b,a!.
+Use combination for the symmetric operators, \lstinline!taketwo! gets
+ \lstinline!a, b!  once, not \lstinline!b, a!.
 \begin{beamercolorbox}{oexample}
 \begin{lstlisting}
-taketwo(A, B, [A|R] , Rem ) :- select(B, R, Rem). 
-taketwo(A, B, [H|R], [H|Rem]) :- taketwo(A, B, R, Rem).
+taketwo(A, B, [A|R] , Rem ) :- select(B, R, Rem). % pick B for first A
+taketwo(A, B, [H|R], [H|Rem]) :- taketwo(A, B, R, Rem). % pick 2 from rest
 
-% if top element evaluates to number, it is the result
+% if top element evaluates to the target number, it is the result
 findit([A|_],V,A) :- V is A. 
 % asymmetric ops.
 findit(L,V,T) :- select(A,L,AR), select(B,AR,Rest),
@@ -1033,7 +1033,7 @@ findit(L,V,T) :- select(A,L,AR), select(B,AR,Rest),
 findit(L,V,T) :- taketwo(A,B,L,Rest),
         member(O,[+,*]),  E =.. [O,A,B],
         findit([E|Rest],V,T).
-
+% make sure subtraction and division are correct
 check(-,A,B) :- A>B.
 check(//,A,B) :- 0 is A mod B.
 \end{lstlisting}
